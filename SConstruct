@@ -5,7 +5,7 @@ import sys
 from methods import print_error
 
 
-libname = "EXTENSION-NAME"
+libname = "GDK"
 projectdir = "demo"
 
 localEnv = Environment(tools=["default"], PLATFORM="")
@@ -37,8 +37,28 @@ Run the following command to download godot-cpp:
 
 env = SConscript("godot-cpp/SConstruct", {"env": env, "customs": customs})
 
-env.Append(CPPPATH=["src/"])
+env.Append(CPPPATH=[
+    "src/",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/GameKit/Include",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/ExtensionLibraries/Xbox.Services.API.C/Include",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/ExtensionLibraries/Xbox.LibHttpClient/Include",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/ExtensionLibraries/Xbox.Services.API.C/Include/Xal"
+    ])
 sources = Glob("src/*.cpp")
+
+env.Append(LIBPATH=[
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/GameKit/Lib/amd64",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/GameKit/Lib",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/ExtensionLibraries/Xbox.Services.API.C/Lib/x64/Release",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/ExtensionLibraries/Xbox.Services.API.C/Lib/x64/Release/v142",
+    "C:/Program Files (x86)/Microsoft GDK/250403/GRDK/ExtensionLibraries/Xbox.LibHttpClient/Lib/x64"
+])
+env.Append(LINKFLAGS=["xgameruntime.thunks.lib", "Microsoft.Xbox.Services.GDK.C.Thunks.lib"])
+env.Append(LINKFLAGS=[
+    "bcrypt.lib", "user32.lib", "kernel32.lib", "advapi32.lib", "libHttpClient.GDK.lib", "appnotify.lib"
+])
+
+env.Append(CPPDEFINES=["HC_PLATFORM=HC_PLATFORM_GDK", "HC_DATAMODEL=HC_DATAMODEL_LP64"])
 
 if env["target"] in ["editor", "template_debug"]:
     try:

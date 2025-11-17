@@ -6,6 +6,7 @@
 #include <godot_cpp/godot.hpp>
 
 #include "godot_gdk.h"
+#include "gdk_achievements.h"
 
 using namespace godot;
 
@@ -15,6 +16,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 		return;
 	}
 	GDREGISTER_CLASS(godot_gdk);
+	GDREGISTER_CLASS(gdk_achievements);
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {

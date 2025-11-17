@@ -8,14 +8,20 @@
 #include "godot_cpp/variant/variant.hpp"
 #include <XAsync.h>
 #include <XTaskQueue.h>
+#include <XUser.h>
+#include <xsapi-c/types_c.h>
+
+#include <string>
 
 using namespace godot;
 
 class godot_gdk : public RefCounted {
 	GDCLASS(godot_gdk, RefCounted)
 
+	godot::Callable stored;
+
 private:
-	HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue) const;
+	static HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue);
 	static void Identity_TrySignInDefaultUserSilently_Callback(XAsyncBlock *asyncBlock);
 
 protected:
@@ -26,5 +32,11 @@ public:
 	~godot_gdk() override = default;
 
 	void print_type(const Variant &p_variant) const;
-	int InitializeGDK(const String SCID);
+	int InitializeGDK(godot::Callable);
+	static bool CreateContextHandle(XblContextHandle* handle);
+	static XTaskQueueHandle GetQueueHandle();
+
+	static XUserLocalId GetUserId();
+	static XUserHandle GetUserHandle();
+	static bool CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage);
 };

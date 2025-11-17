@@ -13,8 +13,10 @@
 #include <sstream>
 #include <string>
 
-XTaskQueueHandle queue = nullptr;
-uint64_t xboxUserId;
+static XTaskQueueHandle queue;
+static XUserLocalId xboxUserId;
+static XUserHandle xboxUserHandle;
+static godot::Callable* callback;
 
 void godot_gdk::_bind_methods() {
 	godot::ClassDB::bind_method(D_METHOD("print_type", "variant"), &godot_gdk::print_type);
@@ -25,55 +27,46 @@ void godot_gdk::print_type(const Variant &p_variant) const {
 	print_line(vformat("Type: %d", p_variant.get_type()));
 }
 
-int godot_gdk::InitializeGDK(const String SCID) {
+int godot_gdk::InitializeGDK(godot::Callable cb) {
+	//Take the callable to keep reference
+	stored = cb;
+	//Reference pointer in static context so it's callable from GDKs callback
+	callback = &stored;
 
 	HRESULT hr = XGameRuntimeInitialize();
-	if (FAILED(hr)) {
-		ERR_PRINT("Failed to initialize Xbox Game Runtime (GDK).");
+	if (!CheckResult(hr,"Successfully initialized GDK", "Failed to initialize Xbox Game Runtime (GDK).")) {
 		return hr;
 	}
-
-	print_line("Successfully initialized GDK");
 
 	hr = XTaskQueueCreate(
 		XTaskQueueDispatchMode::ThreadPool,
 		XTaskQueueDispatchMode::ThreadPool,
 		&queue);
 
-	if (FAILED(hr))
+	if (!CheckResult(hr, "Successfully initialized Task Queue", "Failed to initialize Task Queue"))
 	{
-		ERR_PRINT("Failed to initialize Task Queue");
 		return hr;
 	}
-	print_line("Successfully initialized Task Queue");
 
-	std::string native = SCID.utf8().get_data();
 
 	XblInitArgs xblArgs = {};
 	xblArgs.queue = queue;
-	xblArgs.scid = native.c_str();
+	xblArgs.scid = "00000000-0000-0000-0000-000000000000";
 
 	hr = XblInitialize(&xblArgs);
-	if (FAILED(hr))
+	if (!CheckResult(hr, "Successfully initialized xbox services", "Failed to initialize Xbox services"))
 	{
-		ERR_PRINT("Failed to initialize Xbox services");
 		return hr;
 	}
 
-	print_line("Successfully initialized xbox services");
 	hr = Identity_TrySignInDefaultUserSilently(queue);
-	if (FAILED(hr)) {
-		ERR_PRINT("Failed to start login");
-	}else {
-		print_line("Login started");
-	}
+	CheckResult(hr, "Login successfully started", "Failed to start login");
 
 	return hr;
 }
 
 
-HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue) const
-{
+HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue) {
 	XAsyncBlock* asyncBlock = new XAsyncBlock();
 	asyncBlock->queue = asyncQueue;
 	asyncBlock->callback = Identity_TrySignInDefaultUserSilently_Callback;
@@ -81,9 +74,8 @@ HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle a
 	// Request to silently sign in the default user.
 	HRESULT hr = XUserAddAsync(XUserAddOptions::AddDefaultUserSilently, asyncBlock);
 
-	if (FAILED(hr))
+	if (!CheckResult(hr, "Successfully started login", "Failed to start login"))
 	{
-		ERR_PRINT("Failed to start login");
 		delete asyncBlock;
 	}
 
@@ -92,49 +84,61 @@ HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle a
 
 void CALLBACK godot_gdk::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsyncBlock* asyncBlock)
 {
-	// NOTE: XUserAddResult will add a Ref to the passed-in XUserHandle.
-	XUserHandle newUser = nullptr;
-	HRESULT hr = XUserAddResult(asyncBlock, &newUser);
+	HRESULT hr = XUserAddResult(asyncBlock, &xboxUserHandle);
 
-	if (SUCCEEDED(hr))
-	{
-		print_line("Login successful");
-
-		XblContextHandle handle;
-		hr = XblContextCreateHandle(newUser, &handle);
-
-		if (SUCCEEDED(hr)) {
-			printf("Successfully created handle");
-
-			XUserLocalId userID;
-			hr = XUserGetLocalId(newUser, &userID);
-
-			if (SUCCEEDED(hr)) {
-				printf("Successfully retrieved userid");
-
-			}else {
-				std::ostringstream oss;
-				oss << "Login failed. HRESULT=0x"
-					<< std::hex << std::setw(8) << std::setfill('0') << hr;
-
-				ERR_PRINT(oss.str().c_str());
-			}
-		}else {
-			std::ostringstream oss;
-			oss << "Login failed. HRESULT=0x"
-				<< std::hex << std::setw(8) << std::setfill('0') << hr;
-
-			ERR_PRINT(oss.str().c_str());
-		}
+	if (!CheckResult(hr, "Login successful", "Login failed")) {
+		delete asyncBlock;
+		return;
 	}
-	else
-	{
+
+	XblContextHandle handle;
+
+	if (!CreateContextHandle(&handle)) {
+		delete asyncBlock;
+		return;
+	}
+
+	hr = XUserGetLocalId(xboxUserHandle, &xboxUserId);
+
+	if (!CheckResult(hr, "Successfully retrieved userid", "Failed to retrieve userid")) {
+		delete asyncBlock;
+		return;
+	}
+
+	if (callback && callback->is_valid()) {
+		callback->call();
+	}
+}
+
+bool godot_gdk::CreateContextHandle(XblContextHandle* handle) {
+	HRESULT hr = XblContextCreateHandle(xboxUserHandle, handle);
+
+	return CheckResult(hr, "Successfully created handle", "Creating handle failed");
+}
+
+XTaskQueueHandle godot_gdk::GetQueueHandle() {
+	return queue;
+}
+
+XUserLocalId  godot_gdk::GetUserId() {
+	return xboxUserId;
+}
+
+XUserHandle godot_gdk::GetUserHandle() {
+	return xboxUserHandle;
+}
+
+bool godot_gdk::CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage) {
+	if (FAILED(result)) {
 		std::ostringstream oss;
-		oss << "Login failed. HRESULT=0x"
-			<< std::hex << std::setw(8) << std::setfill('0') << hr;
-
+		oss << errorMessage
+			<< " HRESULT=0x"
+			<< std::hex << std::setw(8) << std::setfill('0') << result;
 		ERR_PRINT(oss.str().c_str());
+		return false;
 	}
 
-	delete asyncBlock;
+	print_line(succeedMessage.c_str());
+
+	return true;
 }

@@ -51,6 +51,8 @@ target_sources(${LIBNAME}
     src/register_types.h
     src/godot_gdk.cpp
     src/godot_gdk.h
+    src/achievements.cpp
+    src/achievements.h
 )
 
 # Fetch a list of the xml files to use for documentation and add to our target

@@ -1,5 +1,8 @@
 ﻿#include "gdk_achievements.h"
+
+#include "gdk_achievement.h"
 #include "godot_gdk.h"
+#include "../godot-cpp/gen/include/godot_cpp/variant/callable.hpp"
 
 #include <Windows.h>
 #include <winapifamily.h>
@@ -11,19 +14,23 @@
 #include <XGame.h>
 
 #include <iomanip>
-#include <ios>
-#include <sstream>
-#include <string>
-
+#include <list>
+#include <map>
 
 void gdk_achievements::_bind_methods() {
-	godot::ClassDB::bind_method(D_METHOD("GetAchievements"), &gdk_achievements::GetAchievements);
+	godot::ClassDB::bind_method(D_METHOD("GetAchievements", "callback"), &gdk_achievements::GetAchievements);
 }
 
-void gdk_achievements::GetAchievements() {
-	XAsyncBlock* asyncBlock = new XAsyncBlock();
+void gdk_achievements::GetAchievements(godot::Callable callback) {
+	XAsyncBlock *asyncBlock = new XAsyncBlock();
 	XTaskQueueHandle queue_handle = godot_gdk::GetQueueHandle();
 	asyncBlock->queue = queue_handle;
+
+	AchievementGatherer* gatherer = new AchievementGatherer();
+	gatherer->Callback = callback;
+
+	asyncBlock->context = gatherer;
+
 	asyncBlock->callback = GetAchievementsCallback;
 
 	XblContextHandle handle;
@@ -33,36 +40,53 @@ void gdk_achievements::GetAchievements() {
 	}
 
 	uint32_t titleID;
-	if (!godot_gdk::CheckResult(!XGameGetXboxTitleId(&titleID), "Successfully retrieved titleID", "Failed to retrieve titleID"))
-	{
+	if (!godot_gdk::CheckResult(!XGameGetXboxTitleId(&titleID), "Successfully retrieved titleID", "Failed to retrieve titleID")) {
 		return;
 	}
 
-	HRESULT hr = XblAchievementsGetAchievementsForTitleIdAsync(handle, godot_gdk::GetUserId().value, titleID, XblAchievementType::All, false, XblAchievementOrderBy::DefaultOrder, 0, 32, asyncBlock);
+	HRESULT hr = XblAchievementsGetAchievementsForTitleIdAsync(handle, godot_gdk::GetUserId().value, titleID, XblAchievementType::All, false, XblAchievementOrderBy::DefaultOrder, 0, 0, asyncBlock);
 
 	godot_gdk::CheckResult(hr, "Successfully started retrieving achievements", "Failed to start retrieving achievements");
 }
 
 void gdk_achievements::GetAchievementsCallback(XAsyncBlock *asyncBlock) {
+	AchievementGatherer* gatherer = static_cast<AchievementGatherer*>(asyncBlock->context);
 
 	XblAchievementsResultHandle resultHandle;
 	HRESULT hr = XblAchievementsGetAchievementsForTitleIdResult(asyncBlock, &resultHandle);
 
-	if (!godot_gdk::CheckResult(hr, "Successfully retrieved achievements", "Failed to retrieve achievements")) {
+	if (!godot_gdk::CheckResult(hr, "", "Failed to retrieve achievements")) {
 		return;
 	}
 
-	const XblAchievement* achievement;
+	const XblAchievement *achievements;
 	size_t size;
-	hr = XblAchievementsResultGetAchievements(resultHandle, &achievement, &size);
+	hr = XblAchievementsResultGetAchievements(resultHandle, &achievements, &size);
 
-	if (!godot_gdk::CheckResult(hr, "Successfully retrieved achievements", "Failed to retrieve achievements")) {
+	if (!godot_gdk::CheckResult(hr, "", "Failed to retrieve achievements")) {
 		return;
 	}
 
 	for (int i = 0; i < size; i++) {
-		print_line(achievement[i].name);
+		gatherer->RetrievedAchievements.push_back(memnew(gdk_achievement(&achievements[i])));
 	}
 
-	XblAchievementsResultCloseHandle(resultHandle);
+	bool hasMoreAchievements = false;
+
+	//GDK can only retrieve 32 achievements at once. Check if there is more, and retrieve until we have all.
+	XblAchievementsResultHasNext(resultHandle, &hasMoreAchievements);
+
+	if (hasMoreAchievements) {
+		XblAchievementsResultGetNextAsync(resultHandle, 0, asyncBlock);
+	} else {
+		FinishGetAchievements(gatherer);
+	}
+}
+
+void gdk_achievements::FinishGetAchievements(AchievementGatherer* gatherer) {
+	if (gatherer->Callback.is_valid()) {
+		gatherer->Callback.call(gatherer->RetrievedAchievements);
+	}
+
+	delete gatherer;
 }

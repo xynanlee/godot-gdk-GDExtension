@@ -10,4 +10,12 @@ func on_init_done() -> void:
 	print("callback invoked")
 	
 	var achievement = gdk_achievements.new()
-	achievement.GetAchievements()
+	achievement.GetAchievements(get_achievements)
+	
+func get_achievements(achievements):
+	print("got achievements");
+	
+	for a in achievements:
+		print(a.name);
+	
+	

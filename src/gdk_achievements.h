@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "gdk_achievement.h"
+
 #include <Windows.h>
 #include <winapifamily.h>
 #include <objbase.h>
@@ -8,13 +10,21 @@
 #include "godot_cpp/variant/variant.hpp"
 #include <XAsync.h>
 #include <XTaskQueue.h>
+#include <list>
+#include <xsapi-c/services_c.h>
 
 using namespace godot;
+
+struct AchievementGatherer {
+	Array RetrievedAchievements;
+	Callable Callback;
+};
 
 class gdk_achievements : public RefCounted {
 	GDCLASS(gdk_achievements, RefCounted)
 
 	static void CALLBACK GetAchievementsCallback(_Inout_ XAsyncBlock* asyncBlock);
+	static void FinishGetAchievements(AchievementGatherer* gatherer);
 protected:
 	static void _bind_methods();
 
@@ -22,5 +32,5 @@ public:
 	gdk_achievements() = default;
 	~gdk_achievements() override = default;
 
-	void GetAchievements();
+	void GetAchievements(Callable callback);
 };

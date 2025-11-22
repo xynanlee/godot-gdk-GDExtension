@@ -1,10 +1,11 @@
 extends Node
 class_name BaseScript
 
-var currentNode;
-var gdkObject;
+var currentNode:Control;
+var gdkObject:godot_gdk;
+@export var SCID:String
 
-static func buttonInfo(text, requiresSubMenu, function, hasOutput = false, inputs = []):
+static func buttonInfo(text:String, requiresSubMenu:bool, function:Callable, hasOutput:bool = false, inputs = []):
 	return {
 		"name" = text,
 		"submenu" = requiresSubMenu,
@@ -16,14 +17,14 @@ static func buttonInfo(text, requiresSubMenu, function, hasOutput = false, input
 
 func _ready():
 	gdkObject = godot_gdk.new()
-	gdkObject.InitializeGDK(on_init_done)
+	gdkObject.InitializeGDK(on_init_done, SCID)
 	
 	create_menu("MainMenu")
 	currentNode = $Control/MainMenu
 		
-func create_menu(menuName, previousMenu = ""):
+func create_menu(menuName:String, previousMenu:String = ""):
 	#Create the control as base for new menu
-	var control = Control.new()
+	var control := Control.new()
 	control.name = menuName
 	
 	#Load script for the new menu if there is one
@@ -35,26 +36,26 @@ func create_menu(menuName, previousMenu = ""):
 	control.visible=false
 	
 	#Create grid container for all the buttons
-	var gridContainer = GridContainer.new()
+	var gridContainer := GridContainer.new()
 	gridContainer.name = "Buttons"
 	control.add_child(gridContainer)
 	
 	#Load script for the new menu if there is one
 	if control.has_method("get_infos"):
 		for info in control.get_infos():
-			var parentNode = get_node("Control/"+menuName+"/Buttons")
+			var parentNode := get_node("Control/"+menuName+"/Buttons")
 			
-			var horizontalContainer = GridContainer.new();
-			var columns = 1;
+			var horizontalContainer := GridContainer.new();
+			var columns := 1;
 			parentNode.add_child(horizontalContainer)
 			
 			#Create button to the new menu
-			var button = Button.new()
+			var button := Button.new()
 			button.text = info["name"]
 			horizontalContainer.add_child(button)
 			
 			for input in info["inputs"]:
-				var inputField = LineEdit.new()
+				var inputField := LineEdit.new()
 				inputField.expand_to_text_length = true
 				inputField.placeholder_text = input;
 				horizontalContainer.add_child(inputField)
@@ -62,7 +63,7 @@ func create_menu(menuName, previousMenu = ""):
 				columns += 1
 			
 			if info["output"]:
-				var label = Label.new()
+				var label := Label.new()
 				label.text = "Output"
 				horizontalContainer.add_child(label)
 				info["function"] = info["function"].bind(label)
@@ -77,11 +78,11 @@ func create_menu(menuName, previousMenu = ""):
 	
 	if previousMenu != "":
 		#Add back button as last button to go back to previous menus
-		var returnButton = Button.new()
+		var returnButton := Button.new()
 		returnButton.text = "Back"
 		returnButton.pressed.connect(Callable(self, "_button_pressed").bind(previousMenu))
 
-func _button_pressed(menu):
+func _button_pressed(menu:String):
 	currentNode.visible = false;
 	currentNode = get_node("Control/" + menu)
 	currentNode.visible = true;

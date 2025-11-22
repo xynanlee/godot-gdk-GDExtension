@@ -1,7 +1,7 @@
 extends Node
 
-var achievement;
-var achievements;
+var achievement:gdk_achievements;
+var achievements:Array[gdk_achievement];
 
 func get_infos():
 	return [
@@ -14,24 +14,25 @@ func _ready() -> void:
 	achievement = gdk_achievements.new()
 	print("Achievements initialized")
 	
-func get_achievements(output) -> void:
+func get_achievements(output:Label) -> void:
 	print("Start retrieveing achievements")
-	var callable = Callable(self, "receive_achievements").bind(output)
+	var callable:Callable = Callable(self, "receive_achievements").bind(output)
 	achievement.GetAchievements(callable)
 	
-func receive_achievements(received_achievements, output):
+func receive_achievements(received_achievements:Array, output:Label):
 	print("Received achievements");
-	self.achievements = received_achievements
 	
-	var achievementNames = ""
+	achievements = []
+	var achievementNames:String = ""
 	
 	for a in received_achievements:
 		print(a.name);
 		achievementNames += "\""+a.name+"\", "
+		achievements.push_back(a as gdk_achievement)
 	
 	output.text = achievementNames
 		
-func unlock_achievement_with_index(indexInput):
+func unlock_achievement_with_index(indexInput:LineEdit):
 	if achievements == null:
 		printerr("Achievement list is null. Retrieve achievements first")
 		return
@@ -43,5 +44,5 @@ func unlock_achievement_with_index(indexInput):
 	achievement.UnlockAchievement(achievements[int(indexInput.text)].id)
 	
 	
-func unlock_achievement_with_id(idInput):
+func unlock_achievement_with_id(idInput:LineEdit):
 	achievement.UnlockAchievement(idInput.text)

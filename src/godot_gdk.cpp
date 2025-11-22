@@ -16,32 +16,29 @@
 static XTaskQueueHandle queue;
 static XUserLocalId xboxUserId;
 static XUserHandle xboxUserHandle;
-static godot::Callable* callback;
+static std::string SCID;
 
 void godot_gdk::_bind_methods() {
 	godot::ClassDB::bind_method(D_METHOD("print_type", "variant"), &godot_gdk::print_type);
-	godot::ClassDB::bind_method(D_METHOD("InitializeGDK"), &godot_gdk::InitializeGDK);
+	godot::ClassDB::bind_method(D_METHOD("InitializeGDK", "callback", "SCID"), &godot_gdk::InitializeGDK);
 }
 
 void godot_gdk::print_type(const Variant &p_variant) const {
 	print_line(vformat("Type: %d", p_variant.get_type()));
 }
 
-int godot_gdk::InitializeGDK(godot::Callable cb) {
-	//Take the callable to keep reference
-	stored = cb;
-	//Reference pointer in static context so it's callable from GDKs callback
-	callback = &stored;
+int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
 
 	HRESULT hr = XGameRuntimeInitialize();
 	if (!CheckResult(hr,"Successfully initialized GDK", "Failed to initialize Xbox Game Runtime (GDK).")) {
 		return hr;
 	}
 
-
 	XblInitArgs xblArgs = {};
 	xblArgs.queue = queue;
-	xblArgs.scid = "00000000-0000-0000-0000-000000000000";
+
+	SCID = scid.utf8();
+	xblArgs.scid = SCID.c_str();
 
 	hr = XblInitialize(&xblArgs);
 	if (!CheckResult(hr, "Successfully initialized xbox services", "Failed to initialize Xbox services"))
@@ -51,16 +48,18 @@ int godot_gdk::InitializeGDK(godot::Callable cb) {
 
 	queue = XblGetAsyncQueue();
 
-	hr = Identity_TrySignInDefaultUserSilently(queue);
+	hr = Identity_TrySignInDefaultUserSilently(queue, cb);
 	CheckResult(hr, "Login successfully started", "Failed to start login");
 
 	return hr;
 }
 
 
-HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue) {
+HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue, godot::Callable cb) {
 	XAsyncBlock* asyncBlock = new XAsyncBlock();
 	asyncBlock->queue = asyncQueue;
+	auto* cb_ptr = new godot::Callable(cb);
+	asyncBlock->context = cb_ptr;
 	asyncBlock->callback = Identity_TrySignInDefaultUserSilently_Callback;
 
 	// Request to silently sign in the default user.
@@ -97,9 +96,14 @@ void CALLBACK godot_gdk::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAs
 		return;
 	}
 
+	godot::Callable* callback = static_cast<godot::Callable*>(asyncBlock->context);
+
 	if (callback && callback->is_valid()) {
 		callback->call_deferred();
 	}
+
+	delete callback;
+	delete asyncBlock;
 }
 
 bool godot_gdk::CreateContextHandle(XblContextHandle* handle) {
@@ -127,6 +131,10 @@ XAsyncBlock* godot_gdk::CreateAsyncBlock() {
 	return asyncBlock;
 }
 
+std::string godot_gdk::GetSCID() {
+	return SCID;
+}
+
 bool godot_gdk::CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage) {
 	if (FAILED(result)) {
 		std::ostringstream oss;
@@ -137,7 +145,9 @@ bool godot_gdk::CheckResult(HRESULT result, std::string succeedMessage, std::str
 		return false;
 	}
 
-	print_line(succeedMessage.c_str());
+	if(succeedMessage != "") {
+		print_line(succeedMessage.c_str());
+	}
 
 	return true;
 }

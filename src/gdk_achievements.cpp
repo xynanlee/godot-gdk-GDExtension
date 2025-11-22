@@ -2,7 +2,6 @@
 
 #include "gdk_achievement.h"
 #include "godot_gdk.h"
-#include "../godot-cpp/gen/include/godot_cpp/variant/callable.hpp"
 
 #include <Windows.h>
 #include <winapifamily.h>

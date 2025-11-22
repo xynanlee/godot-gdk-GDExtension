@@ -18,10 +18,8 @@ using namespace godot;
 class godot_gdk : public RefCounted {
 	GDCLASS(godot_gdk, RefCounted)
 
-	godot::Callable stored;
-
 private:
-	static HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue);
+	static HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue, godot::Callable cb);
 	static void Identity_TrySignInDefaultUserSilently_Callback(XAsyncBlock *asyncBlock);
 
 protected:
@@ -32,12 +30,13 @@ public:
 	~godot_gdk() override = default;
 
 	void print_type(const Variant &p_variant) const;
-	int InitializeGDK(godot::Callable);
+	int InitializeGDK(Callable, String);
 	static bool CreateContextHandle(XblContextHandle* handle);
 	static XTaskQueueHandle GetQueueHandle();
 
 	static XUserLocalId GetUserId();
 	static XUserHandle GetUserHandle();
 	static XAsyncBlock* godot_gdk::CreateAsyncBlock();
+	static std::string GetSCID();
 	static bool CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage);
 };

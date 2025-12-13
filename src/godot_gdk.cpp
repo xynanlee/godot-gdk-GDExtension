@@ -16,15 +16,10 @@
 static XTaskQueueHandle queue;
 static XUserLocalId xboxUserId;
 static XUserHandle xboxUserHandle;
-static std::string SCID;
+static const char* SCID;
 
 void godot_gdk::_bind_methods() {
-	godot::ClassDB::bind_method(D_METHOD("print_type", "variant"), &godot_gdk::print_type);
 	godot::ClassDB::bind_method(D_METHOD("InitializeGDK", "callback", "SCID"), &godot_gdk::InitializeGDK);
-}
-
-void godot_gdk::print_type(const Variant &p_variant) const {
-	print_line(vformat("Type: %d", p_variant.get_type()));
 }
 
 int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
@@ -37,8 +32,8 @@ int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
 	XblInitArgs xblArgs = {};
 	xblArgs.queue = queue;
 
-	SCID = scid.utf8();
-	xblArgs.scid = SCID.c_str();
+	SCID = godot_gdk::CopyStringToChar(scid);
+	xblArgs.scid = SCID;
 
 	hr = XblInitialize(&xblArgs);
 	if (!CheckResult(hr, "Successfully initialized xbox services", "Failed to initialize Xbox services"))
@@ -58,7 +53,7 @@ int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
 HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue, godot::Callable cb) {
 	XAsyncBlock* asyncBlock = new XAsyncBlock();
 	asyncBlock->queue = asyncQueue;
-	auto* cb_ptr = new godot::Callable(cb);
+	godot::Callable* cb_ptr = new godot::Callable(cb);
 	asyncBlock->context = cb_ptr;
 	asyncBlock->callback = Identity_TrySignInDefaultUserSilently_Callback;
 
@@ -131,7 +126,7 @@ XAsyncBlock* godot_gdk::CreateAsyncBlock() {
 	return asyncBlock;
 }
 
-std::string godot_gdk::GetSCID() {
+const char* godot_gdk::GetSCID() {
 	return SCID;
 }
 
@@ -150,4 +145,15 @@ bool godot_gdk::CheckResult(HRESULT result, std::string succeedMessage, std::str
 	}
 
 	return true;
+}
+
+char* godot_gdk::CopyStringToChar(godot::String string) {
+	godot::CharString cs = string.utf8();
+	int len = cs.length();
+
+	char* out = new char[len + 1];
+	memcpy(out, cs.get_data(), len);
+	out[len] = '\0';
+
+	return out;
 }

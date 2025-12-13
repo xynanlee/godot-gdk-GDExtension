@@ -8,6 +8,7 @@
 #include "godot_gdk.h"
 #include "gdk_achievement.h"
 #include "gdk_achievements.h"
+#include "gdk_game_save.h"
 
 using namespace godot;
 
@@ -19,6 +20,9 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(godot_gdk);
 	GDREGISTER_CLASS(gdk_achievement);
 	GDREGISTER_CLASS(gdk_achievements);
+	GDREGISTER_CLASS(gdk_game_save);
+	GDREGISTER_CLASS(gdk_game_save_blob);
+	GDREGISTER_CLASS(gdk_game_save_blob_info);
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {

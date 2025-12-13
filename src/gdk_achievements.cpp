@@ -2,6 +2,7 @@
 
 #include "gdk_achievement.h"
 #include "godot_gdk.h"
+#include "../godot-cpp/include/godot_cpp/core/memory.hpp"
 
 #include <Windows.h>
 #include <winapifamily.h>
@@ -15,6 +16,7 @@
 #include <iomanip>
 #include <list>
 #include <map>
+#include <unordered_map>
 
 void gdk_achievements::_bind_methods() {
 	godot::ClassDB::bind_method(D_METHOD("GetAchievements", "callback"), &gdk_achievements::GetAchievements);
@@ -25,10 +27,11 @@ void gdk_achievements::_bind_methods() {
 void gdk_achievements::GetAchievements(godot::Callable callback) {
 	XAsyncBlock* asyncBlock = godot_gdk::CreateAsyncBlock();
 
-	AchievementGatherer* gatherer = new AchievementGatherer();
-	gatherer->Callback = callback;
+	std::unordered_map<std::string, void*>* callbackContext = new std::unordered_map<std::string, void*>();
+	(*callbackContext)["Callback"] = new godot::Callable(callback);
+	(*callbackContext)["Array"] = new godot::Array();
 
-	asyncBlock->context = gatherer;
+	asyncBlock->context = callbackContext;
 	asyncBlock->callback = GetAchievementsCallback;
 
 	XblContextHandle handle;
@@ -48,7 +51,8 @@ void gdk_achievements::GetAchievements(godot::Callable callback) {
 }
 
 void gdk_achievements::GetAchievementsCallback(XAsyncBlock *asyncBlock) {
-	AchievementGatherer* gatherer = static_cast<AchievementGatherer*>(asyncBlock->context);
+	std::unordered_map<std::string, void*>* ExtraContext = static_cast<std::unordered_map<std::string, void*>*>(asyncBlock->context);
+	godot::Array* achievementArray = static_cast<godot::Array*>((*ExtraContext)["Array"]);
 
 	XblAchievementsResultHandle resultHandle;
 	HRESULT hr = XblAchievementsGetAchievementsForTitleIdResult(asyncBlock, &resultHandle);
@@ -66,7 +70,7 @@ void gdk_achievements::GetAchievementsCallback(XAsyncBlock *asyncBlock) {
 	}
 
 	for (int i = 0; i < size; i++) {
-		gatherer->RetrievedAchievements.push_back(memnew(gdk_achievement(&achievements[i])));
+		achievementArray->push_back(memnew(gdk_achievement(&achievements[i])));
 	}
 
 	bool hasMoreAchievements = false;
@@ -77,19 +81,23 @@ void gdk_achievements::GetAchievementsCallback(XAsyncBlock *asyncBlock) {
 	if (hasMoreAchievements) {
 		XblAchievementsResultGetNextAsync(resultHandle, 0, asyncBlock);
 	} else {
-		FinishGetAchievements(gatherer);
+
+		print_line("Call callback");
+
+		godot::Callable* callback = static_cast<godot::Callable*>((*ExtraContext)["Callback"]);
+		if (callback->is_valid()) {
+			print_line("Callback is valid");
+			callback->call_deferred(*achievementArray);
+		}
+		print_line("Delete stuff");
+
+		//delete achievementArray;
+		//delete callback;
+		//delete &ExtraContext;
 		delete asyncBlock;
 	}
 
 	XblAchievementsResultCloseHandle(resultHandle);
-}
-
-void gdk_achievements::FinishGetAchievements(AchievementGatherer* gatherer) {
-	if (gatherer->Callback.is_valid()) {
-		gatherer->Callback.call_deferred(gatherer->RetrievedAchievements);
-	}
-
-	delete gatherer;
 }
 
 void gdk_achievements::UnlockAchievement(godot::String achievementId) {

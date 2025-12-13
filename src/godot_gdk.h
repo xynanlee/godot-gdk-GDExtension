@@ -29,7 +29,6 @@ public:
 	godot_gdk() = default;
 	~godot_gdk() override = default;
 
-	void print_type(const Variant &p_variant) const;
 	int InitializeGDK(Callable, String);
 	static bool CreateContextHandle(XblContextHandle* handle);
 	static XTaskQueueHandle GetQueueHandle();
@@ -37,6 +36,7 @@ public:
 	static XUserLocalId GetUserId();
 	static XUserHandle GetUserHandle();
 	static XAsyncBlock* godot_gdk::CreateAsyncBlock();
-	static std::string GetSCID();
+	static const char* GetSCID();
 	static bool CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage);
+	static char* CopyStringToChar(String string);
 };

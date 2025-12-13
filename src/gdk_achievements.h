@@ -13,18 +13,13 @@
 #include <list>
 #include <xsapi-c/services_c.h>
 
-using namespace godot;
 
-struct AchievementGatherer {
-	Array RetrievedAchievements;
-	Callable Callback;
-};
+using namespace godot;
 
 class gdk_achievements : public RefCounted {
 	GDCLASS(gdk_achievements, RefCounted)
 
 	static void CALLBACK GetAchievementsCallback(_Inout_ XAsyncBlock* asyncBlock);
-	static void FinishGetAchievements(AchievementGatherer* gatherer);
 	static void InternalSetAchievementPercentage(String achievementId, uint32_t percentage, const std::string &successMessage, const std::string &failMessage);
 protected:
 	static void _bind_methods();

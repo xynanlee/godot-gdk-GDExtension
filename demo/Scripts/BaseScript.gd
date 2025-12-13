@@ -81,6 +81,7 @@ func create_menu(menuName:String, previousMenu:String = ""):
 		var returnButton := Button.new()
 		returnButton.text = "Back"
 		returnButton.pressed.connect(Callable(self, "_button_pressed").bind(previousMenu))
+		gridContainer.add_child(returnButton)
 
 func _button_pressed(menu:String):
 	currentNode.visible = false;
@@ -89,4 +90,6 @@ func _button_pressed(menu:String):
 
 func on_init_done() -> void:
 	print("GDK Initialization finished")
+	var node = get_node("Control/Saves")
+	node.InitializeGameSave();
 	currentNode.visible = true;

@@ -22,7 +22,7 @@ protected:
 
 public:
 	gdk_game_save_blob_info() = default;
-	explicit gdk_game_save_blob_info(const XGameSaveBlobInfo* src);
+	void setInfo(const XGameSaveBlobInfo* src);
 
 	~gdk_game_save_blob_info() override = default;
 

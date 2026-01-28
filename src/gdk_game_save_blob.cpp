@@ -7,7 +7,8 @@
 gdk_game_save_blob::gdk_game_save_blob(const XGameSaveBlob* src) {
 	if (!src) return;
 
-	info = memnew(gdk_game_save_blob_info(&src->info));
+	info.instantiate();
+	info->setInfo(&src->info);
 
 	data.resize(src->info.size);
 	memcpy(data.ptrw(), src->data, src->info.size);

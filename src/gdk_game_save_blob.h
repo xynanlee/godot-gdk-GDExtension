@@ -28,9 +28,9 @@ public:
 
 	~gdk_game_save_blob() override = default;
 
-	gdk_game_save_blob_info* info;
+	Ref<gdk_game_save_blob_info> info;
 	PackedByteArray data;
 
-	gdk_game_save_blob_info* get_info() const { return info; }
+	Ref<gdk_game_save_blob_info> get_info() const { return info; }
 	PackedByteArray get_data() const { return data; }
 };

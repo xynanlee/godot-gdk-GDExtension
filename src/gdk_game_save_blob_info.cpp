@@ -1,6 +1,6 @@
 ﻿#include "gdk_game_save_blob_info.h"
 
-gdk_game_save_blob_info::gdk_game_save_blob_info(const XGameSaveBlobInfo* src) {
+void gdk_game_save_blob_info::setInfo(const XGameSaveBlobInfo* src) {
 	if (!src) return;
 
 	name = src->name;

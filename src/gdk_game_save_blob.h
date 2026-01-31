@@ -16,21 +16,21 @@
 
 using namespace godot;
 
-class gdk_game_save_blob : public RefCounted {
-	GDCLASS(gdk_game_save_blob, RefCounted)
+class GDKGameSaveBlob : public RefCounted {
+	GDCLASS(GDKGameSaveBlob, RefCounted)
 
 protected:
 	static void _bind_methods();
 
 public:
-	gdk_game_save_blob() = default;
-	explicit gdk_game_save_blob(const XGameSaveBlob* src);
+	GDKGameSaveBlob() = default;
+	explicit GDKGameSaveBlob(const XGameSaveBlob* src);
 
-	~gdk_game_save_blob() override = default;
+	~GDKGameSaveBlob() override = default;
 
-	Ref<gdk_game_save_blob_info> info;
+	Ref<GDKGameSaveBlobInfo> info;
 	PackedByteArray data;
 
-	Ref<gdk_game_save_blob_info> get_info() const { return info; }
+	Ref<GDKGameSaveBlobInfo> get_info() const { return info; }
 	PackedByteArray get_data() const { return data; }
 };

@@ -1,7 +1,7 @@
 extends Node
 
-var achievement:gdk_achievements;
-var achievements:Array[gdk_achievement];
+var achievement:GDKAchievements;
+var achievements:Array[GDKAchievement];
 
 func get_infos():
 	return [
@@ -11,7 +11,7 @@ func get_infos():
 	]
 
 func _ready() -> void:
-	achievement = gdk_achievements.new()
+	achievement = GDKAchievements.new()
 	print("Achievements initialized")
 	
 func get_achievements(output:Label) -> void:
@@ -28,7 +28,7 @@ func receive_achievements(received_achievements:Array, output:Label):
 	for a in received_achievements:
 		print(a.name);
 		achievementNames += "\""+a.name+"\", "
-		achievements.push_back(a as gdk_achievement)
+		achievements.push_back(a as GDKAchievement)
 	
 	output.text = achievementNames
 		

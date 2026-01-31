@@ -1,6 +1,6 @@
 extends Node
 
-var saveSystem:gdk_game_save;
+var saveSystem:GDKGameSave;
 
 func get_infos():
 	return [
@@ -10,19 +10,19 @@ func get_infos():
 	]
 
 func InitializeGameSave() -> void:
-	saveSystem = gdk_game_save.new()
+	saveSystem = GDKGameSave.new()
 	saveSystem.InitializeGameSaveProviderAsync(InitializeGameSaveCallback, false, "TestGameName");
-	
+
 func InitializeGameSaveCallback() -> void:
 	print("Finished initializing Game Save Provider")
 
 func ReadBlob(output:Label, fileName:LineEdit) -> void:
 	var blobs:Array = saveSystem.ReadBlobData("test", [fileName.text]);
-	
+
 	if blobs.size() > 0:
-		var test:gdk_game_save_blob = blobs[0]
+		var test:GDKGameSaveBlob = blobs[0]
 		output.text = test.data.get_string_from_utf8();
-	
+
 func WriteStringBlob(dataInput:LineEdit, fileName:LineEdit):
 	saveSystem.WriteBlobDataString(fileName.text, dataInput.text);
 

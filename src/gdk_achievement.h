@@ -12,8 +12,8 @@
 #include <xsapi-c/services_c.h>
 using namespace godot;
 
-class gdk_achievement : public RefCounted {
-    GDCLASS(gdk_achievement, RefCounted)
+class GDKAchievement : public RefCounted {
+    GDCLASS(GDKAchievement, RefCounted)
 
 public:
 	String id;
@@ -34,9 +34,9 @@ public:
 	String deep_link;
 	bool is_revoked = false;
 
-    gdk_achievement() = default; // required by Godot
+    GDKAchievement() = default; // required by Godot
 
-    gdk_achievement(const XblAchievement* src);
+    GDKAchievement(const XblAchievement* src);
 
 protected:
 	static void _bind_methods();

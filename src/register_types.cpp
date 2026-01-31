@@ -18,13 +18,13 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(godot_gdk);
-	GDREGISTER_CLASS(gdk_asyncBlock);
-	GDREGISTER_CLASS(gdk_achievement);
-	GDREGISTER_CLASS(gdk_achievements);
-	GDREGISTER_CLASS(gdk_game_save);
-	GDREGISTER_CLASS(gdk_game_save_blob);
-	GDREGISTER_CLASS(gdk_game_save_blob_info);
+	GDREGISTER_CLASS(GodotGDK);
+	GDREGISTER_CLASS(GDKAsyncBlock);
+	GDREGISTER_CLASS(GDKAchievement);
+	GDREGISTER_CLASS(GDKAchievements);
+	GDREGISTER_CLASS(GDKGameSave);
+	GDREGISTER_CLASS(GDKGameSaveBlob);
+	GDREGISTER_CLASS(GDKGameSaveBlobInfo);
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {

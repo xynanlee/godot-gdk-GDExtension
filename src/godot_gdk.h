@@ -15,19 +15,19 @@
 
 using namespace godot;
 
-class godot_gdk : public RefCounted {
-	GDCLASS(godot_gdk, RefCounted)
+class GodotGDK : public RefCounted {
+	GDCLASS(GodotGDK, RefCounted)
 
 private:
-	static HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue, godot::Callable cb);
+	static HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue, Callable cb);
 	static void Identity_TrySignInDefaultUserSilently_Callback(XAsyncBlock *asyncBlock);
 
 protected:
 	static void _bind_methods();
 
 public:
-	godot_gdk() = default;
-	~godot_gdk() override = default;
+	GodotGDK() = default;
+	~GodotGDK() override = default;
 
 	int InitializeGDK(Callable, String);
 	static bool CreateContextHandle(XblContextHandle* handle);
@@ -35,7 +35,7 @@ public:
 
 	static XUserLocalId GetUserId();
 	static XUserHandle GetUserHandle();
-	static XAsyncBlock* godot_gdk::CreateAsyncBlock();
+	static XAsyncBlock* GodotGDK::CreateAsyncBlock();
 	static const char* GetSCID();
 	static bool CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage);
 	static char* CopyStringToChar(String string);

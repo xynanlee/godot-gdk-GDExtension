@@ -18,11 +18,11 @@ static XUserLocalId xboxUserId;
 static XUserHandle xboxUserHandle;
 static const char* SCID;
 
-void godot_gdk::_bind_methods() {
-	godot::ClassDB::bind_method(D_METHOD("InitializeGDK", "callback", "SCID"), &godot_gdk::InitializeGDK);
+void GodotGDK::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("InitializeGDK", "callback", "SCID"), &GodotGDK::InitializeGDK);
 }
 
-int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
+int GodotGDK::InitializeGDK(Callable cb, String scid) {
 
 	HRESULT hr = XGameRuntimeInitialize();
 	if (!CheckResult(hr,"Successfully initialized GDK", "Failed to initialize Xbox Game Runtime (GDK).")) {
@@ -32,7 +32,7 @@ int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
 	XblInitArgs xblArgs = {};
 	xblArgs.queue = queue;
 
-	SCID = godot_gdk::CopyStringToChar(scid);
+	SCID = GodotGDK::CopyStringToChar(scid);
 	xblArgs.scid = SCID;
 
 	hr = XblInitialize(&xblArgs);
@@ -50,10 +50,10 @@ int godot_gdk::InitializeGDK(godot::Callable cb, godot::String scid) {
 }
 
 
-HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue, godot::Callable cb) {
+HRESULT GodotGDK::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle asyncQueue, Callable cb) {
 	XAsyncBlock* asyncBlock = new XAsyncBlock();
 	asyncBlock->queue = asyncQueue;
-	godot::Callable* cb_ptr = new godot::Callable(cb);
+	Callable* cb_ptr = new Callable(cb);
 	asyncBlock->context = cb_ptr;
 	asyncBlock->callback = Identity_TrySignInDefaultUserSilently_Callback;
 
@@ -68,7 +68,7 @@ HRESULT godot_gdk::Identity_TrySignInDefaultUserSilently(_In_ XTaskQueueHandle a
 	return hr;
 }
 
-void CALLBACK godot_gdk::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsyncBlock* asyncBlock)
+void CALLBACK GodotGDK::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsyncBlock* asyncBlock)
 {
 	HRESULT hr = XUserAddResult(asyncBlock, &xboxUserHandle);
 
@@ -91,7 +91,7 @@ void CALLBACK godot_gdk::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAs
 		return;
 	}
 
-	godot::Callable* callback = static_cast<godot::Callable*>(asyncBlock->context);
+	Callable* callback = static_cast<Callable*>(asyncBlock->context);
 
 	if (callback && callback->is_valid()) {
 		callback->call_deferred();
@@ -101,36 +101,36 @@ void CALLBACK godot_gdk::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAs
 	delete asyncBlock;
 }
 
-bool godot_gdk::CreateContextHandle(XblContextHandle* handle) {
+bool GodotGDK::CreateContextHandle(XblContextHandle* handle) {
 	HRESULT hr = XblContextCreateHandle(xboxUserHandle, handle);
 
 	return CheckResult(hr, "Successfully created handle", "Creating handle failed");
 }
 
-XTaskQueueHandle godot_gdk::GetQueueHandle() {
+XTaskQueueHandle GodotGDK::GetQueueHandle() {
 	return queue;
 }
 
-XUserLocalId  godot_gdk::GetUserId() {
+XUserLocalId  GodotGDK::GetUserId() {
 	return xboxUserId;
 }
 
-XUserHandle godot_gdk::GetUserHandle() {
+XUserHandle GodotGDK::GetUserHandle() {
 	return xboxUserHandle;
 }
 
-XAsyncBlock* godot_gdk::CreateAsyncBlock() {
+XAsyncBlock* GodotGDK::CreateAsyncBlock() {
 	XAsyncBlock* asyncBlock = new XAsyncBlock();
-	XTaskQueueHandle queue_handle = godot_gdk::GetQueueHandle();
+	XTaskQueueHandle queue_handle = GodotGDK::GetQueueHandle();
 	asyncBlock->queue = queue_handle;
 	return asyncBlock;
 }
 
-const char* godot_gdk::GetSCID() {
+const char* GodotGDK::GetSCID() {
 	return SCID;
 }
 
-bool godot_gdk::CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage) {
+bool GodotGDK::CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage) {
 	if (FAILED(result)) {
 		std::ostringstream oss;
 		oss << errorMessage
@@ -147,8 +147,8 @@ bool godot_gdk::CheckResult(HRESULT result, std::string succeedMessage, std::str
 	return true;
 }
 
-char* godot_gdk::CopyStringToChar(godot::String string) {
-	godot::CharString cs = string.utf8();
+char* GodotGDK::CopyStringToChar(String string) {
+	CharString cs = string.utf8();
 	int len = cs.length();
 
 	char* out = new char[len + 1];

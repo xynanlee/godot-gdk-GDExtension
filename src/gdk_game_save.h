@@ -19,8 +19,8 @@
 
 using namespace godot;
 
-class gdk_game_save : public RefCounted {
-	GDCLASS(gdk_game_save, RefCounted)
+class GDKGameSave : public RefCounted {
+	GDCLASS(GDKGameSave, RefCounted)
 
 	void SetGameName(String gameName);
 
@@ -37,8 +37,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	gdk_game_save() = default;
-	~gdk_game_save() override = default;
+	GDKGameSave() = default;
+	~GDKGameSave() override = default;
 
 	void InitializeGameSaveProvider(bool syncOnDemand, String containerName);
 	void InitializeGameSaveProviderAsync(Callable callback, bool syncOnDemand, godot::String containerName);

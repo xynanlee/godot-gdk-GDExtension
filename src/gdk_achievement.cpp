@@ -3,7 +3,7 @@
 #include <xsapi-c/services_c.h>
 using namespace godot;
 
-gdk_achievement::gdk_achievement(const XblAchievement* src)
+GDKAchievement::GDKAchievement(const XblAchievement* src)
 {
 	if (!src) return;
 
@@ -43,18 +43,18 @@ gdk_achievement::gdk_achievement(const XblAchievement* src)
 	is_revoked = src->isRevoked;
 }
 
-void gdk_achievement::_bind_methods() {
+void GDKAchievement::_bind_methods() {
 	// Godot-visible properties via getters
-	ClassDB::bind_method(D_METHOD("get_id"), &gdk_achievement::get_id);
-	ClassDB::bind_method(D_METHOD("get_scid"), &gdk_achievement::get_scid);
-	ClassDB::bind_method(D_METHOD("get_name"), &gdk_achievement::get_name);
-	ClassDB::bind_method(D_METHOD("get_is_secret"), &gdk_achievement::get_is_secret);
-	ClassDB::bind_method(D_METHOD("get_unlocked_desc"), &gdk_achievement::get_unlocked_desc);
-	ClassDB::bind_method(D_METHOD("get_locked_desc"), &gdk_achievement::get_locked_desc);
-	ClassDB::bind_method(D_METHOD("get_product_id"), &gdk_achievement::get_product_id);
-	ClassDB::bind_method(D_METHOD("get_estimated_time"), &gdk_achievement::get_estimated_time);
-	ClassDB::bind_method(D_METHOD("get_deep_link"), &gdk_achievement::get_deep_link);
-	ClassDB::bind_method(D_METHOD("get_is_revoked"), &gdk_achievement::get_is_revoked);
+	ClassDB::bind_method(D_METHOD("get_id"), &GDKAchievement::get_id);
+	ClassDB::bind_method(D_METHOD("get_scid"), &GDKAchievement::get_scid);
+	ClassDB::bind_method(D_METHOD("get_name"), &GDKAchievement::get_name);
+	ClassDB::bind_method(D_METHOD("get_is_secret"), &GDKAchievement::get_is_secret);
+	ClassDB::bind_method(D_METHOD("get_unlocked_desc"), &GDKAchievement::get_unlocked_desc);
+	ClassDB::bind_method(D_METHOD("get_locked_desc"), &GDKAchievement::get_locked_desc);
+	ClassDB::bind_method(D_METHOD("get_product_id"), &GDKAchievement::get_product_id);
+	ClassDB::bind_method(D_METHOD("get_estimated_time"), &GDKAchievement::get_estimated_time);
+	ClassDB::bind_method(D_METHOD("get_deep_link"), &GDKAchievement::get_deep_link);
+	ClassDB::bind_method(D_METHOD("get_is_revoked"), &GDKAchievement::get_is_revoked);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "id"), "", "get_id");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "scid"), "", "get_scid");

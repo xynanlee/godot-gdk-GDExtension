@@ -49,8 +49,8 @@ target_sources(${LIBNAME}
     PRIVATE
     src/register_types.cpp
     src/register_types.h
-    src/godot_gdk.cpp
-    src/godot_gdk.h
+    src/GodotGDK.cpp
+    src/GodotGDK.h
     src/achievements.cpp
     src/achievements.h
 )

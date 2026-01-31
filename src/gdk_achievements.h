@@ -16,8 +16,8 @@
 
 using namespace godot;
 
-class gdk_achievements : public RefCounted {
-	GDCLASS(gdk_achievements, RefCounted)
+class GDKAchievements : public RefCounted {
+	GDCLASS(GDKAchievements, RefCounted)
 
 	static void CALLBACK GetAchievementsCallback(_Inout_ XAsyncBlock* asyncBlock);
 	static void InternalSetAchievementPercentage(String achievementId, uint32_t percentage, const std::string &successMessage, const std::string &failMessage);
@@ -25,10 +25,10 @@ protected:
 	static void _bind_methods();
 
 public:
-	gdk_achievements() = default;
-	~gdk_achievements() override = default;
+	GDKAchievements() = default;
+	~GDKAchievements() override = default;
 
 	void GetAchievements(Callable callback);
-	void UnlockAchievement(godot::String achievementId);
-	void SetAchievementPercentage(godot::String achievementId, uint32_t percentage);
+	void UnlockAchievement(String achievementId);
+	void SetAchievementPercentage(String achievementId, uint32_t percentage);
 };

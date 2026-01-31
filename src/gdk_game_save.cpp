@@ -26,40 +26,40 @@
 static XGameSaveProviderHandle *saveProviderHandle;
 static char *containerName = nullptr;
 
-void gdk_game_save::_bind_methods() {
-	godot::ClassDB::bind_method(D_METHOD("InitializeGameSaveProvider", "syncOnDemand", "gameName"), &gdk_game_save::InitializeGameSaveProvider);
-	godot::ClassDB::bind_method(D_METHOD("InitializeGameSaveProviderAsync", "callback", "syncOnDemand", "gameName"), &gdk_game_save::InitializeGameSaveProviderAsync);
-	godot::ClassDB::bind_method(D_METHOD("ReadBlobData", "containerName", "fileNames"), &gdk_game_save::ReadBlobData);
-	godot::ClassDB::bind_method(D_METHOD("WriteBlobDataString", "fileName", "data"), &gdk_game_save::WriteBlobDataString);
-	godot::ClassDB::bind_method(D_METHOD("WriteBlobDataByte", "fileName", "data"), &gdk_game_save::WriteBlobDataByte);
+void GDKGameSave::_bind_methods() {
+	godot::ClassDB::bind_method(D_METHOD("InitializeGameSaveProvider", "syncOnDemand", "gameName"), &GDKGameSave::InitializeGameSaveProvider);
+	godot::ClassDB::bind_method(D_METHOD("InitializeGameSaveProviderAsync", "callback", "syncOnDemand", "gameName"), &GDKGameSave::InitializeGameSaveProviderAsync);
+	godot::ClassDB::bind_method(D_METHOD("ReadBlobData", "containerName", "fileNames"), &GDKGameSave::ReadBlobData);
+	godot::ClassDB::bind_method(D_METHOD("WriteBlobDataString", "fileName", "data"), &GDKGameSave::WriteBlobDataString);
+	godot::ClassDB::bind_method(D_METHOD("WriteBlobDataByte", "fileName", "data"), &GDKGameSave::WriteBlobDataByte);
 }
 
-void gdk_game_save::InitializeGameSaveProvider(bool syncOnDemand, godot::String gameName) {
-	containerName = godot_gdk::CopyStringToChar(gameName);
-	XUserHandle userHandle = godot_gdk::GetUserHandle();
+void GDKGameSave::InitializeGameSaveProvider(bool syncOnDemand, godot::String gameName) {
+	containerName = GodotGDK::CopyStringToChar(gameName);
+	XUserHandle userHandle = GodotGDK::GetUserHandle();
 
 	saveProviderHandle = new XGameSaveProviderHandle();
 
-	HRESULT hr = XGameSaveInitializeProvider(userHandle, godot_gdk::GetSCID(), syncOnDemand, saveProviderHandle);
+	HRESULT hr = XGameSaveInitializeProvider(userHandle, GodotGDK::GetSCID(), syncOnDemand, saveProviderHandle);
 
-	godot_gdk::CheckResult(hr, "Successfully initialized GameSaveProvider", "Failed to initialize GameSaveProvider");
+	GodotGDK::CheckResult(hr, "Successfully initialized GameSaveProvider", "Failed to initialize GameSaveProvider");
 }
 
-void gdk_game_save::InitializeGameSaveProviderAsync(godot::Callable callback, bool syncOnDemand, godot::String gameName) {
-	containerName = godot_gdk::CopyStringToChar(gameName);
-	XUserHandle userHandle = godot_gdk::GetUserHandle();
+void GDKGameSave::InitializeGameSaveProviderAsync(godot::Callable callback, bool syncOnDemand, godot::String gameName) {
+	containerName = GodotGDK::CopyStringToChar(gameName);
+	XUserHandle userHandle = GodotGDK::GetUserHandle();
 
-	XAsyncBlock *asyncBlock = godot_gdk::CreateAsyncBlock();
+	XAsyncBlock *asyncBlock = GodotGDK::CreateAsyncBlock();
 	godot::Callable *callbackPointer = new godot::Callable(callback);
 	asyncBlock->context = callbackPointer;
 	asyncBlock->callback = GameSaveProviderAsync_Callback;
 
-	HRESULT hr = XGameSaveInitializeProviderAsync(userHandle, godot_gdk::GetSCID(), syncOnDemand, asyncBlock);
+	HRESULT hr = XGameSaveInitializeProviderAsync(userHandle, GodotGDK::GetSCID(), syncOnDemand, asyncBlock);
 
-	godot_gdk::CheckResult(hr, "Successfully started initialization of GameSaveProvider async", "Failed to start initialization of GameSaveProvider async");
+	GodotGDK::CheckResult(hr, "Successfully started initialization of GameSaveProvider async", "Failed to start initialization of GameSaveProvider async");
 }
 
-void gdk_game_save::SetGameName(godot::String gameName) {
+void GDKGameSave::SetGameName(godot::String gameName) {
 	const char *raw = gameName.utf8();
 
 	size_t len = std::strlen(raw);
@@ -67,11 +67,11 @@ void gdk_game_save::SetGameName(godot::String gameName) {
 	std::memcpy(containerName, raw, len + 1);
 }
 
-void gdk_game_save::GameSaveProviderAsync_Callback(_In_ XAsyncBlock *asyncBlock) {
+void GDKGameSave::GameSaveProviderAsync_Callback(_In_ XAsyncBlock *asyncBlock) {
 	godot::Callable *callback = static_cast<godot::Callable *>(asyncBlock->context);
 	HRESULT hr = XAsyncGetStatus(asyncBlock, false);
 
-	if (godot_gdk::CheckResult(hr, "Successfully initialized GameSaveProvider async", "Failed to initialize GameSaveProvider async")) {
+	if (GodotGDK::CheckResult(hr, "Successfully initialized GameSaveProvider async", "Failed to initialize GameSaveProvider async")) {
 		saveProviderHandle = new XGameSaveProviderHandle();
 		XGameSaveInitializeProviderResult(asyncBlock, saveProviderHandle);
 		callback->call_deferred();
@@ -81,35 +81,35 @@ void gdk_game_save::GameSaveProviderAsync_Callback(_In_ XAsyncBlock *asyncBlock)
 	delete asyncBlock;
 }
 
-XGameSaveContainerHandle *gdk_game_save::CreateContainerHandle() {
+XGameSaveContainerHandle *GDKGameSave::CreateContainerHandle() {
 	XGameSaveContainerHandle *containerHandle = new XGameSaveContainerHandle();
 
 	HRESULT hr = XGameSaveCreateContainer(*saveProviderHandle, containerName, containerHandle);
 
-	godot_gdk::CheckResult(hr, "Successfully created Save Container Handle", "Failed to create Save Container Handle");
+	GodotGDK::CheckResult(hr, "Successfully created Save Container Handle", "Failed to create Save Container Handle");
 
 	return containerHandle;
 }
 
-XGameSaveUpdateHandle *gdk_game_save::CreateUpdateHandle(const char *displayName) {
+XGameSaveUpdateHandle *GDKGameSave::CreateUpdateHandle(const char *displayName) {
 	XGameSaveContainerHandle *containerHandle = CreateContainerHandle();
 
 	XGameSaveUpdateHandle *updateHandle = new XGameSaveUpdateHandle();
 
 	HRESULT hr = XGameSaveCreateUpdate(*containerHandle, containerName, updateHandle);
 
-	godot_gdk::CheckResult(hr, "Successfully created Update Handle", "Failed to create Update Handle");
+	GodotGDK::CheckResult(hr, "Successfully created Update Handle", "Failed to create Update Handle");
 
 	return updateHandle;
 }
 
-godot::Array gdk_game_save::ReadBlobData(godot::String containerName, godot::Array fileNames) {
+godot::Array GDKGameSave::ReadBlobData(godot::String containerName, godot::Array fileNames) {
 	print_line("Start Read BLob data");
 	uint32_t size = fileNames.size();
 	const char **paths = new const char *[size];
 
 	for (int i = 0; i < size; i++) {
-		paths[i] = godot_gdk::CopyStringToChar(fileNames[i]);
+		paths[i] = GodotGDK::CopyStringToChar(fileNames[i]);
 	}
 
 	XGameSaveContainerHandle *containerHandle = CreateContainerHandle();
@@ -147,9 +147,9 @@ godot::Array gdk_game_save::ReadBlobData(godot::String containerName, godot::Arr
 		blobData = static_cast<XGameSaveBlob*>(malloc(allBlobsSize));
 		HRESULT hr = XGameSaveReadBlobData(*containerHandle, paths2, &newSize, allBlobsSize, blobData);
 
-		if (godot_gdk::CheckResult(hr, "Successfully retrieved save blob data", "Failed to read save blob data")) {
+		if (GodotGDK::CheckResult(hr, "Successfully retrieved save blob data", "Failed to read save blob data")) {
 			for (int i = 0; i < newSize; i++) {
-				godotBlobs->push_back(memnew(gdk_game_save_blob(&blobData[i])));
+				godotBlobs->push_back(memnew(GDKGameSaveBlob(&blobData[i])));
 			}
 		}
 	}
@@ -158,39 +158,39 @@ godot::Array gdk_game_save::ReadBlobData(godot::String containerName, godot::Arr
 }
 
 
-void gdk_game_save::WriteBlobDataString(godot::String fileName, godot::String data) {
+void GDKGameSave::WriteBlobDataString(godot::String fileName, godot::String data) {
 	WriteBlobDataByte(fileName, data.to_utf8_buffer());
 }
 
-void gdk_game_save::WriteBlobDataByte(godot::String fileName, godot::PackedByteArray data) {
+void GDKGameSave::WriteBlobDataByte(godot::String fileName, godot::PackedByteArray data) {
 	XGameSaveUpdateHandle *updateHandle = CreateUpdateHandle(fileName.utf8().ptrw());
 
 	HRESULT hr = XGameSaveSubmitBlobWrite(*updateHandle, fileName.utf8(), data.ptrw(), data.size());
 
 	godot::print_line(data);
-	if (!godot_gdk::CheckResult(hr, "Successfully created blob data", "Failed to create blob data")) {
+	if (!GodotGDK::CheckResult(hr, "Successfully created blob data", "Failed to create blob data")) {
 		return;
 	}
 
 	hr = XGameSaveSubmitUpdate(*updateHandle);
-	godot_gdk::CheckResult(hr, "Successfully saved blob data", "Failed to save blob data");
+	GodotGDK::CheckResult(hr, "Successfully saved blob data", "Failed to save blob data");
 
 	delete updateHandle;
 }
 
-void gdk_game_save::GetBlobInfo(godot::String containerName, godot::Callable callback) {
+void GDKGameSave::GetBlobInfo(godot::String containerName, godot::Callable callback) {
 	XGameSaveContainerHandle *containerHandle = CreateContainerHandle();
 	//GetBlobInfo(containerHandle, nullptr, *callback);
 	XGameSaveCloseContainer(*containerHandle);
 }
 
-void gdk_game_save::GetBlobInfo(godot::String containerName, godot::String path, godot::Callable callback) {
+void GDKGameSave::GetBlobInfo(godot::String containerName, godot::String path, godot::Callable callback) {
 	XGameSaveContainerHandle *containerHandle = CreateContainerHandle();
 	//GetBlobInfo(containerHandle, path.utf8(), *callback);
 	XGameSaveCloseContainer(*containerHandle);
 }
 
-void gdk_game_save::GetBlobInfoFinal(XGameSaveContainerHandle *containerHandle, const char *path, std::vector<const XGameSaveBlobInfo *> *blobArray) {
+void GDKGameSave::GetBlobInfoFinal(XGameSaveContainerHandle *containerHandle, const char *path, std::vector<const XGameSaveBlobInfo *> *blobArray) {
 	HRESULT hr;
 	bool closeContainerHandle = false;
 
@@ -207,14 +207,14 @@ void gdk_game_save::GetBlobInfoFinal(XGameSaveContainerHandle *containerHandle, 
 		hr = XGameSaveEnumerateBlobInfoByName(*containerHandle, path, blobArray, GetBlobInfoCallback);
 	}
 
-	godot_gdk::CheckResult(hr, "Successfully started retrieving Blob Info By Name", "Failed to start retrieving Blob Info By Name");
+	GodotGDK::CheckResult(hr, "Successfully started retrieving Blob Info By Name", "Failed to start retrieving Blob Info By Name");
 
 	if (closeContainerHandle) {
 		XGameSaveCloseContainer(*containerHandle);
 	}
 }
 
-bool CALLBACK gdk_game_save::GetBlobInfoCallback(const XGameSaveBlobInfo *info, void *context) {
+bool CALLBACK GDKGameSave::GetBlobInfoCallback(const XGameSaveBlobInfo *info, void *context) {
 	print_line("Callback");
 	std::vector<const XGameSaveBlobInfo *> *blobArray = static_cast<std::vector<const XGameSaveBlobInfo *> *>(context);
 	blobArray->push_back(info);

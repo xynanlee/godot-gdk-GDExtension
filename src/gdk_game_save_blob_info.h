@@ -14,17 +14,17 @@
 
 using namespace godot;
 
-class gdk_game_save_blob_info : public RefCounted {
-	GDCLASS(gdk_game_save_blob_info, RefCounted)
+class GDKGameSaveBlobInfo : public RefCounted {
+	GDCLASS(GDKGameSaveBlobInfo, RefCounted)
 
 protected:
 	static void _bind_methods();
 
 public:
-	gdk_game_save_blob_info() = default;
+	GDKGameSaveBlobInfo() = default;
 	void setInfo(const XGameSaveBlobInfo* src);
 
-	~gdk_game_save_blob_info() override = default;
+	~GDKGameSaveBlobInfo() override = default;
 
 	String name;
 	uint32_t size = 0;

@@ -121,24 +121,24 @@ Ref<GDKUser> GDKUser::create(XUserHandle user) {
 Ref<GDKAsyncBlock> GDKUser::add_user_async(BitField<GDKXUserAddOptions::Enum> options) {
     XUserAddOptions opts = (XUserAddOptions)((int64_t) options);
     XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
 
         XUserHandle user = nullptr;
         HRESULT hr = XUserAddResult(async, &user);
-        Dictionary d;
-        d["code"] = hr;
+        Dictionary return_data;
+        return_data["code"] = hr;
         if (SUCCEEDED(hr)) {
-            d["user"] = GDKUser::create(user);
+            return_data["user"] = GDKUser::create(user);
         }
 
-        wrapper->emit(d);
+        wrapper->emit(return_data);
     });
 
-    HRESULT hr = XUserAddAsync(opts, b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserAddAsync Error: %08X", hr));
-	return b;
+    HRESULT hr = XUserAddAsync(opts, asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddAsync Error: %08X", hr));
+	return asyncBlock;
 }
 
 Ref<GDKAsyncBlock> GDKUser::add_user_by_id_with_ui_async(int64_t user_id) {
@@ -148,23 +148,23 @@ Ref<GDKAsyncBlock> GDKUser::add_user_by_id_with_ui_async(int64_t user_id) {
     */
     
     XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
 
         XUserHandle user = nullptr;
         HRESULT hr = XUserAddByIdWithUiResult(async, &user);
-        Dictionary d;
-        d["code"] = hr;
+        Dictionary return_data;
+        return_data["code"] = hr;
         if (SUCCEEDED(hr)) {
-            d["user"] = GDKUser::create(user);
+            return_data["user"] = GDKUser::create(user);
         }
 
-        wrapper->emit(d);
+        wrapper->emit(return_data);
     });
-    HRESULT hr = XUserAddByIdWithUiAsync(user_id, b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserAddByIdWithUiAsync Error: %08X", hr));
-    return b;
+    HRESULT hr = XUserAddByIdWithUiAsync(user_id, asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddByIdWithUiAsync Error: %08X", hr));
+    return asyncBlock;
 }
 
 int GDKUser::get_max_users() {
@@ -174,7 +174,7 @@ int GDKUser::get_max_users() {
 	return max_users;
 }
 
-Ref<GDKUser> godot::GDKUser::find_user_by_id(int64_t user_id) {
+Ref<GDKUser> GDKUser::find_user_by_id(int64_t user_id) {
     XUserHandle handle;
     HRESULT hr = XUserFindUserById(user_id, &handle);
     ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindUserById Error: %08X", hr));
@@ -224,18 +224,18 @@ bool GDKUser::compare(const Ref<GDKUser> &other) const {
 
 Ref<GDKAsyncBlock> GDKUser::sign_out() const {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
 
         HRESULT hr = XUserSignOutResult(async);
-        Dictionary d;
-        d["code"] = hr;
-        wrapper->emit(d); 
+        Dictionary return_data;
+        return_data["code"] = hr;
+        wrapper->emit(return_data); 
     });
-    HRESULT hr = XUserSignOutAsync(_user, b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserSignOutAsync Error: %08X", hr));
-    return b;
+    HRESULT hr = XUserSignOutAsync(_user, asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserSignOutAsync Error: %08X", hr));
+    return asyncBlock;
 }
 
 int64_t GDKUser::get_id() const {
@@ -259,7 +259,7 @@ bool GDKUser::is_guest() const {
     return ret;
 }
 
-GDKXUserState::Enum godot::GDKUser::get_state() const {
+GDKXUserState::Enum GDKUser::get_state() const {
     XUserState state = XUserState::SignedIn;
     HRESULT hr = XUserGetState(_user, &state);
     ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserState::Enum::SignedIn, vformat("XUserGetState Error: %08X", hr));
@@ -283,34 +283,34 @@ String GDKUser::get_gamer_tag(GDKXUserGamertagComponent::Enum component) const {
 Ref<GDKAsyncBlock> GDKUser::get_gamer_picture_async(GDKXUserGamerPictureSize::Enum size) const {
     XUserGamerPictureSize psize = (XUserGamerPictureSize)size;
     XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
         PackedByteArray byte_array;
         size_t bufferSize = 0;
         HRESULT hr = XUserGetGamerPictureResultSize(async, &bufferSize);
         byte_array.resize(bufferSize);
-        Dictionary d;
-        d["code"] = hr;
+        Dictionary return_data;
+        return_data["code"] = hr;
 
         if (SUCCEEDED(hr)) {
             size_t bufferUsed = 0;
             hr = XUserGetGamerPictureResult(async, bufferSize, byte_array.ptrw(), &bufferUsed);
-            d["code"] = hr;
+            return_data["code"] = hr;
 
             if (SUCCEEDED(hr)) {
                 size_t sqrtB = sqrt(bufferUsed);
                 Ref<Image> image = Image::create_from_data(sqrtB, sqrtB, false, Image::FORMAT_RGBA8, byte_array);
-                d["image"] = image;
+                return_data["image"] = image;
             }
         }
 
-        wrapper->emit(d);
+        wrapper->emit(return_data);
     });
 
-    HRESULT hr = XUserGetGamerPictureAsync(_user, psize, b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserGetGamerPictureAsync Error: %08X", hr));
-    return b;
+    HRESULT hr = XUserGetGamerPictureAsync(_user, psize, asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetGamerPictureAsync Error: %08X", hr));
+    return asyncBlock;
 }
 
 GDKXUserAgeGroup::Enum GDKUser::get_user_age_group() const {
@@ -332,18 +332,18 @@ GDKXUserPrivilegeDenyReason::Enum GDKUser::check_privilege(BitField<GDKXUserPriv
 
 Ref<GDKAsyncBlock> GDKUser::resolve_privilege_with_ui_async(BitField<GDKXUserPrivilegeOptions::Enum> options, GDKXUserPrivilege::Enum privilege) const {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
         HRESULT hr = XUserResolvePrivilegeWithUiResult(async);
-        Dictionary d;
-        d["code"] = hr;
-        wrapper->emit(d);
+        Dictionary return_data;
+        return_data["code"] = hr;
+        wrapper->emit(return_data);
     });
     XUserPrivilegeOptions opt = (XUserPrivilegeOptions)((int64_t) options);
-    HRESULT hr = XUserResolvePrivilegeWithUiAsync(_user, opt, (XUserPrivilege)privilege, b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserResolvePrivilegeWithUiAsync Error: %08X", hr));
-    return b;
+    HRESULT hr = XUserResolvePrivilegeWithUiAsync(_user, opt, (XUserPrivilege)privilege, asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolvePrivilegeWithUiAsync Error: %08X", hr));
+    return asyncBlock;
 }
 
 Ref<GDKAsyncBlock> GDKUser::get_token_and_signature_async(BitField<GDKXUserGetTokenAndSignatureOptions::Enum> options, const String &method, const String &url, 
@@ -360,47 +360,47 @@ Ref<GDKAsyncBlock> GDKUser::get_token_and_signature_async(BitField<GDKXUserGetTo
             header_arr.push_back({key, value});
         }
         XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-        Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-        b->set_callback([](XAsyncBlock* async) {
+        Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+        asyncBlock->set_callback([](XAsyncBlock* async) {
             GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
-            Dictionary d;
+            Dictionary return_data;
             size_t bufferSize = 0;
             HRESULT hr = XUserGetTokenAndSignatureResultSize(async, &bufferSize);
-            d["code"] = hr;
+            return_data["code"] = hr;
 
             if (SUCCEEDED(hr)) {
                 void* buffer = nullptr;
                 XUserGetTokenAndSignatureData* data = nullptr;
                 hr = XUserGetTokenAndSignatureResult(async, bufferSize, &buffer, &data, nullptr);
-                d["code"] = hr;
+                return_data["code"] = hr;
 
                 if (SUCCEEDED(hr)) {
-                    d["data"] = GDKXUserGetTokenAndSignatureData::create(data);
+                    return_data["data"] = GDKXUserGetTokenAndSignatureData::create(data);
                 }
             }
-            wrapper->emit(d);
+            wrapper->emit(return_data);
         });
         HRESULT hr = XUserGetTokenAndSignatureAsync(_user, opt, method.utf8(), url.utf8(), headers.size(),
-            header_arr.ptr(), body.size(), body.ptr(), b->get_block());
+            header_arr.ptr(), body.size(), body.ptr(), asyncBlock->get_block());
         
-        ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserGetTokenAndSignatureAsync Error: %08X", hr));
-        return b;
+        ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetTokenAndSignatureAsync Error: %08X", hr));
+        return asyncBlock;
 }
 
 Ref<GDKAsyncBlock> GDKUser::resolve_issue_with_ui_async(const String &url) const {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(queue);
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
         HRESULT hr = XUserResolveIssueWithUiResult(async);
-        Dictionary d;
-        d["code"] = hr;
-        wrapper->emit(d);
+        Dictionary return_data;
+        return_data["code"] = hr;
+        wrapper->emit(return_data);
     });
 
-    HRESULT hr = XUserResolveIssueWithUiAsync(_user, url.utf8().get_data(), b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserResolveIssueWithUiAsync Error: %08X", hr));
-    return b;
+    HRESULT hr = XUserResolveIssueWithUiAsync(_user, url.utf8().get_data(), asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolveIssueWithUiAsync Error: %08X", hr));
+    return asyncBlock;
 }
 
 Ref<GDKXUserSignOutDeferralHandle> GDKUser::get_sign_out_deferral() const {
@@ -416,24 +416,24 @@ void GDKUser::close_sign_out_deferral_handle(Ref<GDKXUserSignOutDeferralHandle> 
 }
 
 Ref<GDKAsyncBlock> GDKUser::find_controller_for_user_with_ui_async() const {
-    Ref<GDKAsyncBlock> b = GDKAsyncBlock::create(GDKHelpers::get_async_queue());
-    b->set_callback([](XAsyncBlock* async) {
+    Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(GDKHelpers::get_async_queue());
+    asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
-        Dictionary d;
+        Dictionary return_data;
         APP_LOCAL_DEVICE_ID id;
         HRESULT hr = XUserFindControllerForUserWithUiResult(async, &id);
-        d["code"] = hr;
+        return_data["code"] = hr;
         if (SUCCEEDED(hr)) {
             PackedByteArray byte_array;
             byte_array.resize(sizeof(APP_LOCAL_DEVICE_ID));
             memcpy(byte_array.ptrw(), &id, sizeof(APP_LOCAL_DEVICE_ID));
-            d["device_id"] = byte_array;
+            return_data["device_id"] = byte_array;
         }
-        wrapper->emit(d);
+        wrapper->emit(return_data);
     });
-    HRESULT hr = XUserFindControllerForUserWithUiAsync(_user, b->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), b, vformat("XUserFindControllerForUserWithUiAsync Error: %08X", hr));
-	return b;
+    HRESULT hr = XUserFindControllerForUserWithUiAsync(_user, asyncBlock->get_block());
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserFindControllerForUserWithUiAsync Error: %08X", hr));
+	return asyncBlock;
 }
 
 bool GDKUser::is_store_user() const {

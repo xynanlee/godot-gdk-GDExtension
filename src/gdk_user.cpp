@@ -87,7 +87,7 @@ void GDKUser::_bind_methods() {
     ClassDB::bind_static_method("GDKUser", D_METHOD("get_max_users"), &GDKUser::get_max_users);
     ClassDB::bind_static_method("GDKUser", D_METHOD("is_sign_out_present"), &GDKUser::is_sign_out_present);
     ClassDB::bind_static_method("GDKUser", D_METHOD("find_user_by_local_id", "local_id"), &GDKUser::find_user_by_local_id);
-    ClassDB::bind_static_method("GDKUser", D_METHOD("find_user_for_device", "device_id"), &GDKUser::find_user_by_device);
+    ClassDB::bind_static_method("GDKUser", D_METHOD("find_user_by_device", "device_id"), &GDKUser::find_user_by_device);
     ClassDB::bind_method(D_METHOD("duplicate"), &GDKUser::duplicate);
     ClassDB::bind_method(D_METHOD("close_handle"), &GDKUser::close_handle);
     ClassDB::bind_method(D_METHOD("compare", "other"), &GDKUser::compare);
@@ -137,7 +137,7 @@ Ref<GDKAsyncBlock> GDKUser::add_user_async(BitField<GDKXUserAddOptions::Enum> op
     });
 
     HRESULT hr = XUserAddAsync(opts, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddAsync Error: 0x%08ux", (uint64_t)hr));
 	return asyncBlock;
 }
 
@@ -163,21 +163,21 @@ Ref<GDKAsyncBlock> GDKUser::add_user_by_id_with_ui_async(int64_t user_id) {
         wrapper->emit(return_data);
     });
     HRESULT hr = XUserAddByIdWithUiAsync(user_id, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddByIdWithUiAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddByIdWithUiAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
 int GDKUser::get_max_users() {
     uint32_t max_users = 0;
     HRESULT hr = XUserGetMaxUsers(&max_users);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XUserGetMaxUsers Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XUserGetMaxUsers Error: 0x%08ux", (uint64_t)hr));
 	return max_users;
 }
 
 Ref<GDKUser> GDKUser::find_user_by_id(int64_t user_id) {
     XUserHandle handle;
     HRESULT hr = XUserFindUserById(user_id, &handle);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindUserById Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindUserById Error: 0x%08ux", (uint64_t)hr));
 	return GDKUser::create(handle);
 }
 
@@ -191,7 +191,7 @@ Ref<GDKUser> GDKUser::find_user_by_local_id(int64_t local_id) {
 
     XUserHandle user = nullptr;
     HRESULT hr = XUserFindUserByLocalId(id, &user);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindUserByLocalId Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindUserByLocalId Error: 0x%08ux", (uint64_t)hr));
     return GDKUser::create(user);
 }
 
@@ -203,14 +203,14 @@ Ref<GDKUser> GDKUser::find_user_by_device(const PackedByteArray &device_id) {
 
     XUserHandle user = nullptr;
     HRESULT hr = XUserFindForDevice(&id, &user);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindForDevice Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserFindForDevice Error: 0x%08ux", (uint64_t)hr));
     return GDKUser::create(user);
 }
 
 Ref<GDKUser> GDKUser::duplicate() const {
     XUserHandle handle = nullptr;
     HRESULT hr = XUserDuplicateHandle(_user, &handle);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserDuplicateHandle Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKUser::create(nullptr), vformat("XUserDuplicateHandle Error: 0x%08ux", (uint64_t)hr));
     return GDKUser::create(handle);
 }
 
@@ -234,35 +234,35 @@ Ref<GDKAsyncBlock> GDKUser::sign_out() const {
         wrapper->emit(return_data); 
     });
     HRESULT hr = XUserSignOutAsync(_user, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserSignOutAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserSignOutAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
 int64_t GDKUser::get_id() const {
     uint64_t id;
 	HRESULT hr = XUserGetId(_user, &id);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XUserGetId Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XUserGetId Error: 0x%08ux", (uint64_t)hr));
     return id;
 }
 
 int64_t GDKUser::get_local_id() const {
 	XUserLocalId id;
     HRESULT hr = XUserGetLocalId(_user, &id);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XUserGetLocalId Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XUserGetLocalId Error: 0x%08ux", (uint64_t)hr));
     return id.value;
 }
 
 bool GDKUser::is_guest() const {
 	bool ret = false;
     HRESULT hr = XUserGetIsGuest(_user, &ret);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), false, vformat("XUserIsGuest Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), false, vformat("XUserIsGuest Error: 0x%08ux", (uint64_t)hr));
     return ret;
 }
 
 GDKXUserState::Enum GDKUser::get_state() const {
     XUserState state = XUserState::SignedIn;
     HRESULT hr = XUserGetState(_user, &state);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserState::Enum::SignedIn, vformat("XUserGetState Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserState::Enum::SignedIn, vformat("XUserGetState Error: 0x%08ux", (uint64_t)hr));
 	return (GDKXUserState::Enum)state;
 }
 
@@ -272,7 +272,7 @@ String GDKUser::get_gamer_tag(GDKXUserGamertagComponent::Enum component) const {
     char* gamer_tag = nullptr;
     size_t len = 0;
     HRESULT hr = XUserGetGamertag(_user, tag, 128, gamer_tag, &len);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), String(), vformat("XUserGetGamertag Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), String(), vformat("XUserGetGamertag Error: 0x%08ux", (uint64_t)hr));
 
     if (len > 0) {
         return String(gamer_tag);
@@ -309,14 +309,14 @@ Ref<GDKAsyncBlock> GDKUser::get_gamer_picture_async(GDKXUserGamerPictureSize::En
     });
 
     HRESULT hr = XUserGetGamerPictureAsync(_user, psize, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetGamerPictureAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetGamerPictureAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
 GDKXUserAgeGroup::Enum GDKUser::get_user_age_group() const {
     XUserAgeGroup age_group = XUserAgeGroup::Unknown;
     HRESULT hr = XUserGetAgeGroup(_user, &age_group);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserAgeGroup::Enum::Unknown, vformat("XUserGetAgeGroup Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserAgeGroup::Enum::Unknown, vformat("XUserGetAgeGroup Error: 0x%08ux", (uint64_t)hr));
 	return (GDKXUserAgeGroup::Enum)age_group;
 }
 
@@ -326,7 +326,7 @@ GDKXUserPrivilegeDenyReason::Enum GDKUser::check_privilege(BitField<GDKXUserPriv
 
     bool has_privilege = false;
     HRESULT hr = XUserCheckPrivilege(_user, opt, (XUserPrivilege)privilege, &has_privilege, &deny_reason);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), (GDKXUserPrivilegeDenyReason::Enum)deny_reason, vformat("XUserCheckPrivilege Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), (GDKXUserPrivilegeDenyReason::Enum)deny_reason, vformat("XUserCheckPrivilege Error: 0x%08ux", (uint64_t)hr));
     return GDKXUserPrivilegeDenyReason::Enum::None;
 }
 
@@ -342,7 +342,7 @@ Ref<GDKAsyncBlock> GDKUser::resolve_privilege_with_ui_async(BitField<GDKXUserPri
     });
     XUserPrivilegeOptions opt = (XUserPrivilegeOptions)((int64_t) options);
     HRESULT hr = XUserResolvePrivilegeWithUiAsync(_user, opt, (XUserPrivilege)privilege, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolvePrivilegeWithUiAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolvePrivilegeWithUiAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
@@ -383,7 +383,7 @@ Ref<GDKAsyncBlock> GDKUser::get_token_and_signature_async(BitField<GDKXUserGetTo
         HRESULT hr = XUserGetTokenAndSignatureAsync(_user, opt, method.utf8(), url.utf8(), headers.size(),
             header_arr.ptr(), body.size(), body.ptr(), asyncBlock->get_block());
         
-        ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetTokenAndSignatureAsync Error: %08X", hr));
+        ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetTokenAndSignatureAsync Error: 0x%08ux", (uint64_t)hr));
         return asyncBlock;
 }
 
@@ -399,14 +399,14 @@ Ref<GDKAsyncBlock> GDKUser::resolve_issue_with_ui_async(const String &url) const
     });
 
     HRESULT hr = XUserResolveIssueWithUiAsync(_user, url.utf8().get_data(), asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolveIssueWithUiAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolveIssueWithUiAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
 Ref<GDKXUserSignOutDeferralHandle> GDKUser::get_sign_out_deferral() const {
     XUserSignOutDeferralHandle deferral = nullptr;
     HRESULT hr = XUserGetSignOutDeferral(&deferral);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserSignOutDeferralHandle::create(nullptr), vformat("XUserGetSignOutDeferral Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), GDKXUserSignOutDeferralHandle::create(nullptr), vformat("XUserGetSignOutDeferral Error: 0x%08ux", (uint64_t)hr));
     return GDKXUserSignOutDeferralHandle::create(deferral);
 }
 
@@ -432,7 +432,7 @@ Ref<GDKAsyncBlock> GDKUser::find_controller_for_user_with_ui_async() const {
         wrapper->emit(return_data);
     });
     HRESULT hr = XUserFindControllerForUserWithUiAsync(_user, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserFindControllerForUserWithUiAsync Error: %08X", hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserFindControllerForUserWithUiAsync Error: 0x%08ux", (uint64_t)hr));
 	return asyncBlock;
 }
 

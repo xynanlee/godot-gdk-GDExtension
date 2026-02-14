@@ -29,6 +29,18 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKGameSave);
 	GDREGISTER_CLASS(GDKGameSaveBlob);
 	GDREGISTER_CLASS(GDKGameSaveBlobInfo);
+	GDREGISTER_CLASS(GDKXUserAddOptions);
+	GDREGISTER_CLASS(GDKXUserState);
+	GDREGISTER_CLASS(GDKXUserGamertagComponent);
+	GDREGISTER_CLASS(GDKXUserGamerPictureSize);
+	GDREGISTER_CLASS(GDKXUserAgeGroup);
+	GDREGISTER_CLASS(GDKXUserPrivilege);
+	GDREGISTER_CLASS(GDKXUserPrivilegeOptions);
+	GDREGISTER_CLASS(GDKXUserPrivilegeDenyReason);
+	GDREGISTER_CLASS(GDKXUserGetTokenAndSignatureOptions);
+	GDREGISTER_CLASS(GDKXUserDefaultAudioEndpointKind);
+	GDREGISTER_CLASS(GDKXUserGetTokenAndSignatureData);
+	GDREGISTER_CLASS(GDKXUserSignOutDeferralHandle);
 	GDREGISTER_CLASS(GDKUser);
 
 	gdk = GodotGDK::get_singleton();

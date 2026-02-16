@@ -299,8 +299,10 @@ Ref<GDKAsyncBlock> GDKUser::get_gamer_picture_async(GDKXUserGamerPictureSize::En
             return_data["hresult"] = hr;
 
             if (SUCCEEDED(hr)) {
-                size_t sqrtB = sqrt(bufferUsed);
-                Ref<Image> image = Image::create_from_data(sqrtB, sqrtB, false, Image::FORMAT_RGBA8, byte_array);
+                return_data["hresult"] = hr;
+
+                Ref<Image> image = memnew(Image);
+                image->load_png_from_buffer(byte_array);
                 return_data["image"] = image;
             }
         }

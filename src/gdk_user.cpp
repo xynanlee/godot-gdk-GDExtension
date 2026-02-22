@@ -85,6 +85,7 @@ void GDKUser::_bind_methods() {
     ClassDB::bind_static_method("GDKUser", D_METHOD("add_user_async", "options"), &GDKUser::add_user_async);
     ClassDB::bind_static_method("GDKUser", D_METHOD("add_user_by_id_with_ui_async", "user_id"), &GDKUser::add_user_by_id_with_ui_async);
     ClassDB::bind_static_method("GDKUser", D_METHOD("get_max_users"), &GDKUser::get_max_users);
+    ClassDB::bind_static_method("GDKUser", D_METHOD("find_user_by_id", "local_id"), &GDKUser::find_user_by_id);
     ClassDB::bind_static_method("GDKUser", D_METHOD("is_sign_out_present"), &GDKUser::is_sign_out_present);
     ClassDB::bind_static_method("GDKUser", D_METHOD("find_user_by_local_id", "local_id"), &GDKUser::find_user_by_local_id);
     ClassDB::bind_static_method("GDKUser", D_METHOD("find_user_by_device", "device_id"), &GDKUser::find_user_by_device);
@@ -269,9 +270,9 @@ GDKXUserState::Enum GDKUser::get_state() const {
 String GDKUser::get_gamer_tag(GDKXUserGamertagComponent::Enum component) const {
 	XUserGamertagComponent tag = (XUserGamertagComponent)component;
 
-    char* gamer_tag = nullptr;
+    char gamer_tag[128];
     size_t len = 0;
-    HRESULT hr = XUserGetGamertag(_user, tag, 128, gamer_tag, &len);
+    HRESULT hr = XUserGetGamertag(_user, tag, sizeof(gamer_tag), gamer_tag, &len);
     ERR_FAIL_COND_V_MSG(FAILED(hr), String(), vformat("XUserGetGamertag Error: 0x%08ux", (uint64_t)hr));
 
     if (len > 0) {
@@ -329,7 +330,7 @@ GDKXUserPrivilegeDenyReason::Enum GDKUser::check_privilege(BitField<GDKXUserPriv
     bool has_privilege = false;
     HRESULT hr = XUserCheckPrivilege(_user, opt, (XUserPrivilege)privilege, &has_privilege, &deny_reason);
     ERR_FAIL_COND_V_MSG(FAILED(hr), (GDKXUserPrivilegeDenyReason::Enum)deny_reason, vformat("XUserCheckPrivilege Error: 0x%08ux", (uint64_t)hr));
-    return GDKXUserPrivilegeDenyReason::Enum::None;
+    return (GDKXUserPrivilegeDenyReason::Enum)deny_reason;
 }
 
 Ref<GDKAsyncBlock> GDKUser::resolve_privilege_with_ui_async(BitField<GDKXUserPrivilegeOptions::Enum> options, GDKXUserPrivilege::Enum privilege) const {

@@ -34,5 +34,5 @@ void GDKAsyncBlock::set_callback(XAsyncCompletionRoutine* callback) {
 }
 
 void GDKAsyncBlock::emit(Dictionary data) {
-    emit_signal("completed", data);
+    call_deferred("emit_signal", "completed", data);
 }

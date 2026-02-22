@@ -4,7 +4,7 @@ class_name BaseScript
 var currentNode:Control;
 @export var SCID:String
 
-static func buttonInfo(text:String, requiresSubMenu:bool, function:Callable, hasOutput:bool = false, inputs = []):
+static func createButtonInfo(text:String, requiresSubMenu:bool, function:Callable, hasOutput:bool = false, inputs = []):
 	return {
 		"name" = text,
 		"submenu" = requiresSubMenu,
@@ -13,10 +13,16 @@ static func buttonInfo(text:String, requiresSubMenu:bool, function:Callable, has
 		"inputs" = inputs
 	}
 
+static func createInputInfo(useEnumInputs:bool, input):
+	return {
+		"useEnumInputs" = useEnumInputs,
+		"input" = input
+	}
+	
+
 
 func _ready():
 	GDK.InitializeGDK(on_init_done, SCID)
-
 	create_menu("MainMenu")
 	currentNode = $Control/MainMenu
 
@@ -32,20 +38,24 @@ func create_menu(menuName:String, previousMenu:String = ""):
 
 	$Control.add_child(control)
 	control.visible=false
-
+	
+	var scrollContainer = ScrollContainer.new();
+	scrollContainer.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	scrollContainer.custom_minimum_size = DisplayServer.window_get_size()
+	control.add_child(scrollContainer);
+	
 	#Create grid container for all the buttons
 	var gridContainer := GridContainer.new()
 	gridContainer.name = "Buttons"
-	control.add_child(gridContainer)
+	scrollContainer.add_child(gridContainer)
 
 	#Load script for the new menu if there is one
 	if control.has_method("get_infos"):
 		for info in control.get_infos():
-			var parentNode := get_node("Control/"+menuName+"/Buttons")
 
 			var horizontalContainer := GridContainer.new();
 			var columns := 1;
-			parentNode.add_child(horizontalContainer)
+			gridContainer.add_child(horizontalContainer)
 
 			#Create button to the new menu
 			var button := Button.new()
@@ -53,16 +63,18 @@ func create_menu(menuName:String, previousMenu:String = ""):
 			horizontalContainer.add_child(button)
 
 			for input in info["inputs"]:
-				var inputField := LineEdit.new()
-				inputField.expand_to_text_length = true
-				inputField.placeholder_text = input;
+				var inputField = create_input_field(input);
+				
 				horizontalContainer.add_child(inputField)
 				info["function"] = info["function"].bind(inputField)
 				columns += 1
 
 			if info["output"]:
-				var label := Label.new()
+				var label := LineEdit.new()
 				label.text = "Output"
+				label.editable = false;
+				label.expand_to_text_length = true
+				label.add_theme_color_override("font_uneditable_color", Color(1,1,1,1))
 				horizontalContainer.add_child(label)
 				info["function"] = info["function"].bind(label)
 				columns += 1
@@ -80,6 +92,22 @@ func create_menu(menuName:String, previousMenu:String = ""):
 		returnButton.text = "Back"
 		returnButton.pressed.connect(Callable(self, "_button_pressed").bind(previousMenu))
 		gridContainer.add_child(returnButton)
+
+func create_input_field(input):
+	var inputField
+	
+	if(input["useEnumInputs"]):
+		inputField = OptionButton.new()
+		var enumValues = input["input"]
+		
+		for key in enumValues:
+			inputField.add_item(key, enumValues[key])
+	else:
+		inputField = LineEdit.new()
+		inputField.expand_to_text_length = true
+		inputField.placeholder_text = input["input"]
+	
+	return inputField
 
 func _button_pressed(menu:String):
 	currentNode.visible = false;

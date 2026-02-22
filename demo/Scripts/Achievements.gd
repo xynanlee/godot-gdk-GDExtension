@@ -5,21 +5,40 @@ var achievements:Array[GDKAchievement];
 
 func get_infos():
 	return [
-		BaseScript.buttonInfo("Get Achievements", false, Callable(self,"get_achievements"), true),
-		BaseScript.buttonInfo("Unlock Achievement With Index", false, Callable(self, "unlock_achievement_with_index"), false, ["Achievement Index"]),
-		BaseScript.buttonInfo("Unlock Achievement With ID", false, Callable(self, "unlock_achievement_with_id"), false, ["Achievement ID"])
+		BaseScript.createButtonInfo(
+			"Get Achievements",
+			false,
+			Callable(self,"get_achievements"),
+			true
+		),
+		
+		BaseScript.createButtonInfo(
+			"Unlock Achievement With Index",
+			false,
+			Callable(self, "unlock_achievement_with_index"),
+			false,
+			[BaseScript.createInputInfo(false, "Achievement Index")]
+		),
+			
+		BaseScript.createButtonInfo(
+			"Unlock Achievement With ID",
+			false,
+			Callable(self, "unlock_achievement_with_id"),
+			false,
+			[BaseScript.createInputInfo(false, "Achievement ID")]
+		)
 	]
 
 func _ready() -> void:
 	achievement = GDKAchievements.new()
 	print("Achievements initialized")
 	
-func get_achievements(output:Label) -> void:
+func get_achievements(output:LineEdit) -> void:
 	print("Start retrieveing achievements")
 	var callable:Callable = Callable(self, "receive_achievements").bind(output)
 	achievement.GetAchievements(callable)
 	
-func receive_achievements(received_achievements:Array, output:Label):
+func receive_achievements(received_achievements:Array, output:LineEdit):
 	print("Received achievements");
 	
 	achievements = []

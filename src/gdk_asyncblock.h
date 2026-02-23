@@ -23,6 +23,7 @@ public:
     inline XAsyncBlock* get_block() { return _block; }
     void set_callback(XAsyncCompletionRoutine* callback);
     void emit(Dictionary data);
+	Dictionary extra_data;
 };
 
 }

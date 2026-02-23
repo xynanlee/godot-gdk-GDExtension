@@ -9,7 +9,7 @@ func get_infos():
 			false,
 			Callable(self, "ReadBlob"),
 			true,
-			[BaseScript.createInputInfo(false, "File name")]
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "File name")]
 		),
 		
 		BaseScript.createButtonInfo(
@@ -18,8 +18,8 @@ func get_infos():
 			Callable(self, "WriteStringBlob"),
 			false,
 			[
-				BaseScript.createInputInfo(false, "File name"),
-				BaseScript.createInputInfo(false, "Data to save")
+				BaseScript.createInputInfo(BaseScript.InputType.string, "File name"),
+				BaseScript.createInputInfo(BaseScript.InputType.string, "Data to save")
 			]
 		),
 		
@@ -29,8 +29,8 @@ func get_infos():
 			Callable(self, "WriteByteBlob"),
 			false,
 			[
-				BaseScript.createInputInfo(false, "File name"),
-				BaseScript.createInputInfo(false, "Data to save")
+				BaseScript.createInputInfo(BaseScript.InputType.string, "File name"),
+				BaseScript.createInputInfo(BaseScript.InputType.string, "Data to save")
 			]
 		)
 	]

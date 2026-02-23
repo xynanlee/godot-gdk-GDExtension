@@ -30,7 +30,7 @@ class GDKGameSave : public RefCounted {
 	static bool CALLBACK GetBlobInfoCallback(const XGameSaveBlobInfo* info, void* context);
 	void EnumerateBlobInfoByName();
 
-	static void GetBlobInfoFinal(XGameSaveContainerHandle* containerHandle, const char* path, std::vector<const XGameSaveBlobInfo*>* blobArray);
+	static void GetBlobInfoFinal(XGameSaveContainerHandle* containerHandle, const char* path, Vector<const XGameSaveBlobInfo*>* blobArray);
 	static void test(XGameSaveBlobInfo blobInfo, void *context);
 
 protected:

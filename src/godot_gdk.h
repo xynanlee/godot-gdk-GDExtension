@@ -41,12 +41,10 @@ public:
 	static bool CreateContextHandle(XblContextHandle* handle);
 	static XTaskQueueHandle GetQueueHandle();
 
-	
-
 	static XUserLocalId GetUserId();
 	static XUserHandle GetUserHandle();
 	static XAsyncBlock* GodotGDK::CreateAsyncBlock();
 	static const char* GetSCID();
-	static bool CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage);
+	static bool CheckResult(HRESULT result, String succeedMessage, String errorMessage);
 	static char* CopyStringToChar(String string);
 };

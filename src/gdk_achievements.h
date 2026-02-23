@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "gdk_achievement.h"
+#include "gdk_asyncblock.h"
+#include "gdk_user.h"
 
 #include <Windows.h>
 #include <winapifamily.h>
@@ -19,8 +21,8 @@ using namespace godot;
 class GDKAchievements : public RefCounted {
 	GDCLASS(GDKAchievements, RefCounted)
 
-	static void CALLBACK GetAchievementsCallback(_Inout_ XAsyncBlock* asyncBlock);
-	static void InternalSetAchievementPercentage(String achievementId, uint32_t percentage, const std::string &successMessage, const std::string &failMessage);
+	static void CALLBACK get_achievements_callback(_Inout_ XAsyncBlock* asyncBlock);
+	static Ref<GDKAsyncBlock> internal_set_achievement_percentage(Ref<GDKUser> user, String achievementId, uint32_t percentage, const String &successMessage, const String &failMessage);
 protected:
 	static void _bind_methods();
 
@@ -28,7 +30,8 @@ public:
 	GDKAchievements() = default;
 	~GDKAchievements() override = default;
 
-	void GetAchievements(Callable callback);
-	void UnlockAchievement(String achievementId);
-	void SetAchievementPercentage(String achievementId, uint32_t percentage);
+	Ref<GDKAsyncBlock> get_achievements(Ref<GDKUser> user, GDKXblAchievementType::Enum achievementType, bool unlockedOnly, GDKXblAchievementOrderBy::Enum achievementOrder);
+	Ref<GDKAsyncBlock> get_achievement(Ref<GDKUser> user, String achievementId);
+	Ref<GDKAsyncBlock> unlock_achievement(Ref<GDKUser> user, String achievementId);
+	Ref<GDKAsyncBlock> set_achievement_percentage(Ref<GDKUser> user, String achievementId, uint32_t percentage);
 };

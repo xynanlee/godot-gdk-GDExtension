@@ -150,18 +150,15 @@ const char* GodotGDK::GetSCID() {
 	return SCID;
 }
 
-bool GodotGDK::CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage) {
+bool GodotGDK::CheckResult(HRESULT result, String succeedMessage, String errorMessage) {
 	if (FAILED(result)) {
-		std::ostringstream oss;
-		oss << errorMessage
-			<< " HRESULT=0x"
-			<< std::hex << std::setw(8) << std::setfill('0') << result;
-		ERR_PRINT(oss.str().c_str());
+		String resultString = "HRESULT=0x%X";
+		ERR_PRINT(errorMessage + ", " + resultString % (int64_t)(unsigned int)result);
 		return false;
 	}
 
 	if(succeedMessage != "") {
-		print_line(succeedMessage.c_str());
+		print_line(succeedMessage);
 	}
 
 	return true;

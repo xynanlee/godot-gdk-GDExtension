@@ -19,5 +19,17 @@ func get_infos():
 			"XUser",
 			true,
 			Callable(node, "_button_pressed").bind("XUser")
+		),
+			
+		BaseScript.createButtonInfo(
+			"XGame",
+			true,
+			Callable(node, "_button_pressed").bind("XGame")
+		),
+			
+		BaseScript.createButtonInfo(
+			"XGameInvite",
+			true,
+			Callable(node, "_button_pressed").bind("XGameInvite")
 		)
 	]

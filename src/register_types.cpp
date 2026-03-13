@@ -12,6 +12,8 @@
 #include "gdk_achievements.h"
 #include "gdk_game_save.h"
 #include "gdk_user.h"
+#include "gdk_game.h"
+#include "gdk_game_invite.h"
 
 using namespace godot;
 
@@ -42,6 +44,9 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKXUserGetTokenAndSignatureData);
 	GDREGISTER_CLASS(GDKXUserSignOutDeferralHandle);
 	GDREGISTER_CLASS(GDKUser);
+	GDREGISTER_CLASS(GDKGame);
+	GDREGISTER_CLASS(GDKGameInviteToken);
+	GDREGISTER_CLASS(GDKGameInvite);
 
 	gdk = GodotGDK::get_singleton();
 	Engine::get_singleton()->register_singleton("GDK", gdk);

@@ -1,20 +1,17 @@
 ﻿#include "gdk_game_save.h"
 
-#include "gdk_achievement.h"
 #include "gdk_game_save_blob.h"
 #include "godot_gdk.h"
-#include "../godot-cpp/include/godot_cpp/godot.hpp"
-#include "../godot-cpp/include/godot_cpp/core/memory.hpp"
-#include "../godot-cpp/include/godot_cpp/core/print_string.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/core/print_string.hpp"
 
 #include <Windows.h>
 #include <winapifamily.h>
 #include <objbase.h>
 #include <XGameRuntimeInit.h>
-#include <XTaskQueue.h>
 #include <xsapi-c/services_c.h>
 #include <XUser.h>
-#include <XGame.h>
 #include <XGameSave.h>
 
 #include <iomanip>

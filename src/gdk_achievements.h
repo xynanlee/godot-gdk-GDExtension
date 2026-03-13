@@ -11,7 +11,6 @@
 #include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/variant/variant.hpp"
 #include <XAsync.h>
-#include <XTaskQueue.h>
 #include <list>
 #include <xsapi-c/services_c.h>
 

@@ -1,8 +1,8 @@
 ﻿#include "gdk_game_save_blob.h"
 
-#include "../godot-cpp/gen/include/godot_cpp/variant/packed_byte_array.hpp"
-#include "../godot-cpp/include/godot_cpp/core/memory.hpp"
-#include "../godot-cpp/include/godot_cpp/core/print_string.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/variant/packed_byte_array.hpp"
+#include "godot_cpp/core/print_string.hpp"
 
 GDKGameSaveBlob::GDKGameSaveBlob(const XGameSaveBlob* src) {
 	if (!src) return;

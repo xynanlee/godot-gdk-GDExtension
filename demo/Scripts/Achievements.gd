@@ -1,6 +1,6 @@
 extends Node
 
-var achievement:GDKAchievements;
+var achievement_manager:GDKAchievements;
 var achievements:Array[GDKAchievement];
 
 func get_infos():
@@ -67,12 +67,12 @@ func get_infos():
 	]
 
 func _ready() -> void:
-	achievement = GDKAchievements.new()
+	achievement_manager = GDKAchievements.new()
 	print("Achievements initialized")
 	
 func get_achievements(output:LineEdit, order:OptionButton, unlockedOnly:CheckBox, achievementType:OptionButton) -> void:
 	print("Start retrieving achievements")
-	var result = await achievement.get_achievements(XUser.user, achievementType.get_selected_id(), unlockedOnly.button_pressed, order.get_selected_id()).completed
+	var result = await achievement_manager.get_achievements(XUser.user, achievementType.get_selected_id(), unlockedOnly.button_pressed, order.get_selected_id()).completed
 	print(result);
 	achievements = result["achievements"]
 	
@@ -86,10 +86,12 @@ func get_achievements(output:LineEdit, order:OptionButton, unlockedOnly:CheckBox
 	
 func get_achievement(output:LineEdit, idInput:LineEdit) -> void:
 	print("Start retrieving achievement")
-	var result = await achievement.get_achievement(XUser.user, idInput.text).completed
+	var result = await achievement_manager.get_achievement(XUser.user, idInput.text).completed
 	
 	if(result["hresult"] == 0):
-		output.text = result["achievement"].name
+		var achievement:GDKAchievement = result["achievement"]
+		var progression:GDKXblAchievementProgression = achievement.progression
+		output.text = achievement.name + " " + achievement.id + " " + str(achievement.is_secret) + " " + achievement.locked_desc + " " + str(progression.time_unlocked)
 	else:
 		print("Hresult: 0x%08ux" % result["hresult"])
 		
@@ -102,12 +104,12 @@ func unlock_achievement_with_index(indexInput:LineEdit):
 		printerr("The given index isn't valid int. Either give a number or use unlock_achievement_with_id")
 		return
 	
-	var result = await achievement.unlock_achievement(XUser.user, achievements[int(indexInput.text)].id).completed
+	var result = await achievement_manager.unlock_achievement(XUser.user, achievements[int(indexInput.text)].id).completed
 	print("Hresult: 0x%08ux" % result["hresult"])
 	
 	
 func unlock_achievement_with_id(idInput:LineEdit):
-	var result = await achievement.unlock_achievement(XUser.user, idInput.text).completed
+	var result = await achievement_manager.unlock_achievement(XUser.user, idInput.text).completed
 	print("Hresult: 0x%08ux" % result["hresult"])
 		
 func set_achievement_percentage_with_index(percentage:LineEdit, indexInput:LineEdit):
@@ -119,10 +121,10 @@ func set_achievement_percentage_with_index(percentage:LineEdit, indexInput:LineE
 		printerr("The given index isn't valid int. Either give a number or use unlock_achievement_with_id")
 		return
 	
-	var result = await achievement.set_achievement_percentage(XUser.user, achievements[int(indexInput.text)].id, int(percentage.text)).completed
+	var result = await achievement_manager.set_achievement_percentage(XUser.user, achievements[int(indexInput.text)].id, int(percentage.text)).completed
 	print("Hresult: 0x%08ux" % result["hresult"])
 	
 	
 func set_achievement_percentage_with_id(percentage:LineEdit, idInput:LineEdit):
-	var result = await achievement.set_achievement_percentage(XUser.user, idInput.text, int(percentage.text)).completed
+	var result = await achievement_manager.set_achievement_percentage(XUser.user, idInput.text, int(percentage.text)).completed
 	print("Hresult: 0x%08ux" % result["hresult"])

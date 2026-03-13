@@ -1,5 +1,7 @@
 #include "godot_gdk.h"
 
+#include "godot_cpp/core/class_db.hpp"
+
 #include <Windows.h>
 #include <winapifamily.h>
 #include <objbase.h>
@@ -9,7 +11,6 @@
 #include <XUser.h>
 
 #include <iomanip>
-#include <ios>
 #include <sstream>
 #include <string>
 
@@ -99,7 +100,7 @@ void CALLBACK GodotGDK::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsy
 
 	XblContextHandle handle;
 
-	if (!CreateContextHandle(&handle)) {
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
 		delete asyncBlock;
 		return;
 	}
@@ -119,12 +120,6 @@ void CALLBACK GodotGDK::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsy
 
 	delete callback;
 	delete asyncBlock;
-}
-
-bool GodotGDK::CreateContextHandle(XblContextHandle* handle) {
-	HRESULT hr = XblContextCreateHandle(xboxUserHandle, handle);
-
-	return CheckResult(hr, "Successfully created handle", "Creating handle failed");
 }
 
 XTaskQueueHandle GodotGDK::GetQueueHandle() {

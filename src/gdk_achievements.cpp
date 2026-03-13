@@ -5,10 +5,9 @@
 #include "gdk_helpers.h"
 #include "gdk_user.h"
 #include "godot_gdk.h"
-#include "../godot-cpp/include/godot_cpp/core/memory.hpp"
-#include "../godot-cpp/include/godot_cpp/core/print_string.hpp"
-#include "../godot-cpp/include/godot_cpp/templates/a_hash_map.hpp"
-#include "../godot-cpp/include/godot_cpp/variant/typed_array.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/core/print_string.hpp"
+#include "godot_cpp/variant/typed_array.hpp"
 
 #include <Windows.h>
 #include <winapifamily.h>
@@ -16,7 +15,6 @@
 #include <XGameRuntimeInit.h>
 #include <XTaskQueue.h>
 #include <xsapi-c/services_c.h>
-#include <XUser.h>
 #include <XGame.h>
 
 #include <iomanip>
@@ -32,12 +30,49 @@ Ref<GDKAsyncBlock> GDKAchievements::get_achievements(Ref<GDKUser> user, GDKXblAc
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
 	Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
 
-	asyncBlock->set_callback(get_achievements_callback);
+	asyncBlock->set_callback([](XAsyncBlock* asyncBlock) {
+		GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(asyncBlock->context);
+		TypedArray<GDKAchievement> achievementArray = wrapper->extra_data["achievements"];
+
+		XblAchievementsResultHandle resultHandle;
+		HRESULT hr = XblAchievementsGetAchievementsForTitleIdResult(asyncBlock, &resultHandle);
+
+		if (!GodotGDK::CheckResult(hr, "", "Failed to retrieve achievements")) {
+			return;
+		}
+
+		const XblAchievement *achievements;
+		size_t size;
+		hr = XblAchievementsResultGetAchievements(resultHandle, &achievements, &size);
+
+		if (!GodotGDK::CheckResult(hr, "", "Failed to retrieve achievements")) {
+			return;
+		}
+
+		for (int i = 0; i < size; i++) {
+			achievementArray.push_back(memnew(GDKAchievement(&achievements[i])));
+		}
+
+		bool hasMoreAchievements = false;
+
+		//GDK can only retrieve 32 achievements at once. Check if there is more, and retrieve until we have all.
+		XblAchievementsResultHasNext(resultHandle, &hasMoreAchievements);
+
+		if (hasMoreAchievements) {
+			XblAchievementsResultGetNextAsync(resultHandle, 0, asyncBlock);
+		} else {
+			print_line("Call callback");
+			wrapper->emit(wrapper->extra_data);
+		}
+
+		XblAchievementsResultCloseHandle(resultHandle);
+	});
+
 	asyncBlock->extra_data["achievements"] = TypedArray<GDKAchievement>();
 
 	XblContextHandle handle;
 
-	if (!GodotGDK::CreateContextHandle(&handle)) {
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
 		return asyncBlock;
 	}
 
@@ -52,45 +87,6 @@ Ref<GDKAsyncBlock> GDKAchievements::get_achievements(Ref<GDKUser> user, GDKXblAc
 
 	return asyncBlock;
 }
-
-void GDKAchievements::get_achievements_callback(XAsyncBlock* asyncBlock) {
-    GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(asyncBlock->context);
-	TypedArray<GDKAchievement> achievementArray = wrapper->extra_data["achievements"];
-
-	XblAchievementsResultHandle resultHandle;
-	HRESULT hr = XblAchievementsGetAchievementsForTitleIdResult(asyncBlock, &resultHandle);
-
-	if (!GodotGDK::CheckResult(hr, "", "Failed to retrieve achievements")) {
-		return;
-	}
-
-	const XblAchievement *achievements;
-	size_t size;
-	hr = XblAchievementsResultGetAchievements(resultHandle, &achievements, &size);
-
-	if (!GodotGDK::CheckResult(hr, "", "Failed to retrieve achievements")) {
-		return;
-	}
-
-	for (int i = 0; i < size; i++) {
-		achievementArray.push_back(memnew(GDKAchievement(&achievements[i])));
-	}
-
-	bool hasMoreAchievements = false;
-
-	//GDK can only retrieve 32 achievements at once. Check if there is more, and retrieve until we have all.
-	XblAchievementsResultHasNext(resultHandle, &hasMoreAchievements);
-
-	if (hasMoreAchievements) {
-		XblAchievementsResultGetNextAsync(resultHandle, 0, asyncBlock);
-	} else {
-		print_line("Call callback");
-		wrapper->emit(wrapper->extra_data);
-	}
-
-	XblAchievementsResultCloseHandle(resultHandle);
-}
-
 
 Ref<GDKAsyncBlock> GDKAchievements::get_achievement(Ref<GDKUser> user, String achievementId) {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
@@ -120,7 +116,7 @@ Ref<GDKAsyncBlock> GDKAchievements::get_achievement(Ref<GDKUser> user, String ac
 
 	XblContextHandle handle;
 
-	if (!GodotGDK::CreateContextHandle(&handle)) {
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
 		return asyncBlock;
 	}
 
@@ -146,7 +142,7 @@ Ref<GDKAsyncBlock> GDKAchievements::internal_set_achievement_percentage(Ref<GDKU
 
 	XblContextHandle handle;
 
-	if (!GodotGDK::CreateContextHandle(&handle)) {
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
 		return asyncBlock;
 	}
 

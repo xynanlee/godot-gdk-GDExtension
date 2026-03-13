@@ -11,6 +11,7 @@
 #include "gdk_achievement.h"
 #include "gdk_achievements.h"
 #include "gdk_game_save.h"
+#include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 
 using namespace godot;

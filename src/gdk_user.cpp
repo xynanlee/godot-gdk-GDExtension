@@ -131,7 +131,7 @@ Ref<GDKAsyncBlock> GDKUser::add_user_async(BitField<GDKXUserAddOptions::Enum> op
         XUserHandle user = nullptr;
         HRESULT hr = XUserAddResult(async, &user);
         Dictionary return_data;
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
         if (SUCCEEDED(hr)) {
             return_data["user"] = GDKUser::create(user);
         }
@@ -158,7 +158,7 @@ Ref<GDKAsyncBlock> GDKUser::add_user_by_id_with_ui_async(int64_t user_id) {
         XUserHandle user = nullptr;
         HRESULT hr = XUserAddByIdWithUiResult(async, &user);
         Dictionary return_data;
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
         if (SUCCEEDED(hr)) {
             return_data["user"] = GDKUser::create(user);
         }
@@ -233,7 +233,7 @@ Ref<GDKAsyncBlock> GDKUser::sign_out() const {
 
         HRESULT hr = XUserSignOutResult(async);
         Dictionary return_data;
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
         wrapper->emit(return_data); 
     });
     HRESULT hr = XUserSignOutAsync(_user, asyncBlock->get_block());
@@ -294,15 +294,15 @@ Ref<GDKAsyncBlock> GDKUser::get_gamer_picture_async(GDKXUserGamerPictureSize::En
         HRESULT hr = XUserGetGamerPictureResultSize(async, &bufferSize);
         byte_array.resize(bufferSize);
         Dictionary return_data;
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
 
         if (SUCCEEDED(hr)) {
             size_t bufferUsed = 0;
             hr = XUserGetGamerPictureResult(async, bufferSize, byte_array.ptrw(), &bufferUsed);
-            return_data["hresult"] = hr;
+            return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
 
             if (SUCCEEDED(hr)) {
-                return_data["hresult"] = hr;
+                return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
 
                 Ref<Image> image = memnew(Image);
                 image->load_png_from_buffer(byte_array);
@@ -342,7 +342,7 @@ Ref<GDKAsyncBlock> GDKUser::resolve_privilege_with_ui_async(BitField<GDKXUserPri
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
         HRESULT hr = XUserResolvePrivilegeWithUiResult(async);
         Dictionary return_data;
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
         wrapper->emit(return_data);
     });
     XUserPrivilegeOptions opt = (XUserPrivilegeOptions)((int64_t) options);
@@ -371,13 +371,13 @@ Ref<GDKAsyncBlock> GDKUser::get_token_and_signature_async(BitField<GDKXUserGetTo
             Dictionary return_data;
             size_t bufferSize = 0;
             HRESULT hr = XUserGetTokenAndSignatureResultSize(async, &bufferSize);
-            return_data["hresult"] = hr;
+            return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
 
             if (SUCCEEDED(hr)) {
                 void* buffer = nullptr;
                 XUserGetTokenAndSignatureData* data = nullptr;
                 hr = XUserGetTokenAndSignatureResult(async, bufferSize, &buffer, &data, nullptr);
-                return_data["hresult"] = hr;
+                return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
 
                 if (SUCCEEDED(hr)) {
                     return_data["data"] = GDKXUserGetTokenAndSignatureData::create(data);
@@ -399,7 +399,7 @@ Ref<GDKAsyncBlock> GDKUser::resolve_issue_with_ui_async(const String &url) const
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
         HRESULT hr = XUserResolveIssueWithUiResult(async);
         Dictionary return_data;
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
         wrapper->emit(return_data);
     });
 
@@ -427,7 +427,7 @@ Ref<GDKAsyncBlock> GDKUser::find_controller_for_user_with_ui_async() const {
         Dictionary return_data;
         APP_LOCAL_DEVICE_ID id;
         HRESULT hr = XUserFindControllerForUserWithUiResult(async, &id);
-        return_data["hresult"] = hr;
+        return_data["hresult"] = vformat("0x%08ux", (uint64_t)hr);
         if (SUCCEEDED(hr)) {
             PackedByteArray byte_array;
             byte_array.resize(sizeof(APP_LOCAL_DEVICE_ID));

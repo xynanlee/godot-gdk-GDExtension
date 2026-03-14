@@ -4,7 +4,7 @@ class_name BaseScript
 var currentNode:Control;
 @export var SCID:String
 
-enum InputType{string, enums, bool}
+enum InputType{string, int, enums, bool}
 
 static func createButtonInfo(text:String, requiresSubMenu:bool, function:Callable, hasOutput:bool = false, inputs = []):
 	return {
@@ -109,6 +109,12 @@ func create_input_field(input):
 			inputField = LineEdit.new()
 			inputField.expand_to_text_length = true
 			inputField.placeholder_text = input["input"]
+		InputType.int:
+			inputField = SpinBox.new()
+			var lineEdit:LineEdit = inputField.get_line_edit()
+			lineEdit.focus_entered.connect(func(line:LineEdit):
+				line.text = input["input"]
+			)
 		InputType.bool:
 			inputField = CheckBox.new()
 			inputField.text = input["input"]

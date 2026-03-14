@@ -27,6 +27,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);
+	GDREGISTER_CLASS(GDKAchievementsResultHandle);
 	GDREGISTER_CLASS(GDKGameSave);
 	GDREGISTER_CLASS(GDKGameSaveBlob);
 	GDREGISTER_CLASS(GDKGameSaveBlobInfo);

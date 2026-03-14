@@ -21,7 +21,10 @@ func get_infos():
 				"DefaultOrder" : GDKXblAchievementOrderBy.DefaultOrder, 
 				"TitleId" : GDKXblAchievementOrderBy.TitleId, 
 				"UnlockTime": GDKXblAchievementOrderBy.UnlockTime
-				})]
+				}),
+			BaseScript.createInputInfo(BaseScript.InputType.int, "Skip Items"),
+			BaseScript.createInputInfo(BaseScript.InputType.int, "Max Items")
+			]
 		),
 		BaseScript.createButtonInfo(
 			"Get Achievement",
@@ -70,11 +73,27 @@ func _ready() -> void:
 	achievement_manager = GDKAchievements.new()
 	print("Achievements initialized")
 	
-func get_achievements(output:LineEdit, order:OptionButton, unlockedOnly:CheckBox, achievementType:OptionButton) -> void:
-	print("Start retrieving achievements")
-	var result = await achievement_manager.get_achievements(XUser.user, achievementType.get_selected_id(), unlockedOnly.button_pressed, order.get_selected_id()).completed
-	print(result);
-	achievements = result["achievements"]
+func get_achievements(output:LineEdit, max_items:SpinBox, skip_items:SpinBox, order:OptionButton, unlockedOnly:CheckBox, achievementType:OptionButton) -> void:
+	var result = await achievement_manager.get_achievements_async(XUser.user, achievementType.get_selected_id(), unlockedOnly.button_pressed, order.get_selected_id(), int(skip_items.value), int(max_items.value)).completed
+	
+	if result["hresult"] != 0:
+		output.text = "Failed to retrieve achievements: 0x%08ux" % result["hresult"]
+		return
+		
+	var handle:GDKAchievementsResultHandle = result["result"]
+	
+	achievements = achievement_manager.get_achievements_result(handle)
+	
+	while achievement_manager.has_more_achievements(handle):
+		print("get more achievements")
+		result = await achievement_manager.get_next_achievements_async(handle, int(max_items.value)).completed
+		
+		if result["hresult"] != 0:
+			output.text = "Failed to retrieve achievements: 0x%08ux" % result["hresult"]
+			return
+		
+		handle = result["result"]
+		achievements += achievement_manager.get_achievements_result(handle)
 	
 	var achievementNames:String = ""
 	
@@ -88,12 +107,17 @@ func get_achievement(output:LineEdit, idInput:LineEdit) -> void:
 	print("Start retrieving achievement")
 	var result = await achievement_manager.get_achievement(XUser.user, idInput.text).completed
 	
-	if(result["hresult"] == 0):
-		var achievement:GDKAchievement = result["achievement"]
+	if result["hresult"] != 0:
+		output.text = "Failed to retrieve achievements: 0x%08ux" % result["hresult"]
+		return
+		
+	var handle:GDKAchievementsResultHandle = result["result"]
+	var achievements_array:Array[GDKAchievement] = achievement_manager.get_achievements_result(handle)
+	
+	if(achievements.size() > 0):
+		var achievement:GDKAchievement = achievements_array[0]
 		var progression:GDKXblAchievementProgression = achievement.progression
 		output.text = achievement.name + " " + achievement.id + " " + str(achievement.is_secret) + " " + achievement.locked_desc + " " + str(progression.time_unlocked)
-	else:
-		print("Hresult: 0x%08ux" % result["hresult"])
 		
 func unlock_achievement_with_index(indexInput:LineEdit):
 	if achievements == null:

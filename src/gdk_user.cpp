@@ -2,6 +2,7 @@
 #include "gdk_helpers.h"
 #include "gdk_asyncblock.h"
 #include <classes/image.hpp>
+#include <xsapi-c/xbox_live_context_c.h>
 
 using namespace godot;
 
@@ -114,6 +115,8 @@ Ref<GDKUser> GDKUser::create(XUserHandle user) {
     if (user) {
         wrapper.instantiate();
         wrapper->_user = user;
+        HRESULT hr = XblContextCreateHandle(user, &wrapper->_xbl_context);
+        ERR_FAIL_COND_V_MSG(FAILED(hr), wrapper, vformat("XblContextCreateHandle failed in GDKUser::create, Error: 0x%08ux", (uint64_t)hr));
     }
 	return wrapper;
 }

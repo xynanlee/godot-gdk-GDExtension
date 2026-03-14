@@ -4,6 +4,7 @@
 #include <windows.h>
 #include <XUser.h>
 #include <variant/typed_dictionary.hpp>
+#include <xsapi-c/types_c.h>
 #include "gdk_macros.h"
 
 namespace godot {
@@ -174,12 +175,14 @@ class GDKUser : public RefCounted {
 
 private:
     XUserHandle _user = nullptr;
+    XblContextHandle _xbl_context = nullptr;
 
 protected:
     static void _bind_methods();
 
 public:
     inline XUserHandle get_user() const { return _user; }
+    inline XblContextHandle get_xbox_live_context() const { return _xbl_context; }
     static Ref<GDKUser> create(XUserHandle user);
     static Ref<GDKAsyncBlock> add_user_async(BitField<GDKXUserAddOptions::Enum> options);
     static Ref<GDKAsyncBlock> add_user_by_id_with_ui_async(int64_t user_id);

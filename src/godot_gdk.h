@@ -17,7 +17,7 @@
 
 using namespace godot;
 
-class GDKUser;
+namespace godot { class GDKUser; }
 
 class GodotGDK : public RefCounted {
 	GDCLASS(GodotGDK, RefCounted)

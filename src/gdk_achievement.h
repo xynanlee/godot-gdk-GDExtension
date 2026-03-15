@@ -125,9 +125,9 @@ class GDKXblAchievementTitleAssociation : public RefCounted {
 
 	public:
 		GDKXblAchievementTitleAssociation() = default; // required by Godot
-		GDKXblAchievementTitleAssociation(XblAchievementTitleAssociation* src) {
-			name = src->name;
-			title_id = src->titleId;
+		GDKXblAchievementTitleAssociation(XblAchievementTitleAssociation src) {
+			name = src.name;
+			title_id = src.titleId;
 		}
 
 		String name;
@@ -153,10 +153,10 @@ class GDKXblAchievementRequirement : public RefCounted {
 
 	public:
 		GDKXblAchievementRequirement() = default; // required by Godot
-		GDKXblAchievementRequirement(XblAchievementRequirement* src) {
-			id = src->id;
-			current_progress_value = src->currentProgressValue;
-			target_progress_value = src->targetProgressValue;
+		GDKXblAchievementRequirement(XblAchievementRequirement src) {
+			id = src.id;
+			current_progress_value = src.currentProgressValue;
+			target_progress_value = src.targetProgressValue;
 		}
 
 		String id;
@@ -182,13 +182,13 @@ class GDKXblAchievementProgression : public RefCounted {
 
 	public:
 		GDKXblAchievementProgression() = default; // required by Godot
-		GDKXblAchievementProgression(XblAchievementProgression* src) {
-			for(size_t i = 0; i < src->requirementsCount; i++) {
-				Ref<GDKXblAchievementRequirement> requirement = memnew(GDKXblAchievementRequirement(&src->requirements[i]));
+		GDKXblAchievementProgression(XblAchievementProgression src) {
+			for(size_t i = 0; i < src.requirementsCount; i++) {
+				Ref<GDKXblAchievementRequirement> requirement = memnew(GDKXblAchievementRequirement(src.requirements[i]));
 				requirements.push_back(requirement);
 			}
 
-			time_unlocked = src->timeUnlocked;
+			time_unlocked = src.timeUnlocked;
 		}
 		TypedArray<Ref<GDKXblAchievementRequirement>> requirements;
 		int64_t time_unlocked;
@@ -211,9 +211,9 @@ class GDKXblAchievementTimeWindow : public RefCounted {
 
 	public:
 		GDKXblAchievementTimeWindow() = default; // required by Godot
-		GDKXblAchievementTimeWindow(const XblAchievementTimeWindow* src) {
-			start_date = src->startDate;
-			end_date = src->endDate;
+		GDKXblAchievementTimeWindow(const XblAchievementTimeWindow src) {
+			start_date = src.startDate;
+			end_date = src.endDate;
 		}
 		int64_t start_date;
 		int64_t end_date;
@@ -238,10 +238,10 @@ class GDKXblAchievementMediaAsset : public RefCounted {
 
 	public:
 		GDKXblAchievementMediaAsset() = default; // required by Godot
-		GDKXblAchievementMediaAsset(XblAchievementMediaAsset* src) {
-			name = src->name;
-			media_asset_type = static_cast<GDKXblAchievementMediaAssetType::Enum>(src->mediaAssetType);
-			url = src->url;
+		GDKXblAchievementMediaAsset(XblAchievementMediaAsset src) {
+			name = src.name;
+			media_asset_type = static_cast<GDKXblAchievementMediaAssetType::Enum>(src.mediaAssetType);
+			url = src.url;
 		}
 
 		String name;
@@ -275,13 +275,13 @@ class GDKXblAchievementReward : public RefCounted {
 
 	public:
 		GDKXblAchievementReward() = default; // required by Godot
-		GDKXblAchievementReward(const XblAchievementReward* src) {
-			name = src->name;
-			description = src->description;
-			value = src->value;
-			reward_type = static_cast<GDKXblAchievementRewardType::Enum>(src->rewardType);
-			value_type = src->valueType;
-			media_asset = Ref<GDKXblAchievementMediaAsset>(memnew(GDKXblAchievementMediaAsset(src->mediaAsset)));
+		GDKXblAchievementReward(const XblAchievementReward src) {
+			name = src.name;
+			description = src.description;
+			value = src.value;
+			reward_type = static_cast<GDKXblAchievementRewardType::Enum>(src.rewardType);
+			value_type = src.valueType;
+			media_asset = Ref<GDKXblAchievementMediaAsset>(memnew(GDKXblAchievementMediaAsset(*src.mediaAsset)));
 		}
 
 		String name;
@@ -329,7 +329,7 @@ class GDKAchievement : public RefCounted {
 
 	public:
 		GDKAchievement() = default; // required by Godot
-		GDKAchievement(const XblAchievement* src);
+		GDKAchievement(const XblAchievement src);
 
 		String id;
 		String scid;

@@ -28,21 +28,33 @@ Ref<GDKAchievementsResultHandle> GDKAchievementsResultHandle::create(XblAchievem
 	return wrapper;
 }
 
-void GDKAchievementsResultHandle::_notification(int p_what) {
-	if (p_what == NOTIFICATION_PREDELETE && result_handle) {
+Ref<GDKAchievementsResultHandle> GDKAchievementsResultHandle::duplicate() {
+	XblAchievementsResultHandle duplicated;
+	XblAchievementsResultDuplicateHandle(result_handle, &duplicated);
+	return GDKAchievementsResultHandle::create(duplicated);
+}
+
+void GDKAchievementsResultHandle::close_handle() {
+	if(result_handle) {
 		XblAchievementsResultCloseHandle(result_handle);
 		result_handle = nullptr;
 	}
 }
 
+void GDKAchievementsResultHandle::_notification(int p_what) {
+	if (p_what == NOTIFICATION_PREDELETE) {
+		close_handle();
+	}
+}
+
 void GDKAchievements::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("get_achievements_async", "user", "achievement_type", "unlocked_only", "achievement_order", "skip_items", "max_items"), &GDKAchievements::get_achievements_async);
-	ClassDB::bind_method(D_METHOD("get_achievements_result", "result_handle"), &GDKAchievements::get_achievements_result);
-	ClassDB::bind_method(D_METHOD("has_more_achievements", "result_handle"), &GDKAchievements::has_more_achievements);
-	ClassDB::bind_method(D_METHOD("get_next_achievements_async", "result_handle", "max_items"), &GDKAchievements::get_next_achievements_async);
-	ClassDB::bind_method(D_METHOD("get_achievement", "user", "achievementId"), &GDKAchievements::get_achievement);
-	ClassDB::bind_method(D_METHOD("unlock_achievement", "user", "achievementId"), &GDKAchievements::unlock_achievement);
-	ClassDB::bind_method(D_METHOD("set_achievement_percentage", "user", "achievementId", "percentage"), &GDKAchievements::set_achievement_percentage);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievements_async", "user", "achievement_type", "unlocked_only", "achievement_order", "skip_items", "max_items"), &GDKAchievements::get_achievements_async);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievements_result", "result_handle"), &GDKAchievements::get_achievements_result);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("has_more_achievements", "result_handle"), &GDKAchievements::has_more_achievements);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_next_achievements_async", "result_handle", "max_items"), &GDKAchievements::get_next_achievements_async);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievement", "user", "achievementId"), &GDKAchievements::get_achievement);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("unlock_achievement", "user", "achievementId"), &GDKAchievements::unlock_achievement);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("set_achievement_percentage", "user", "achievementId", "percentage"), &GDKAchievements::set_achievement_percentage);
 }
 
 Ref<GDKAsyncBlock> GDKAchievements::get_achievements_async(Ref<GDKUser> user, GDKXblAchievementType::Enum achievement_type, bool unlocked_only, GDKXblAchievementOrderBy::Enum achievement_order, int skip_items, int max_items) {
@@ -94,7 +106,7 @@ TypedArray<GDKAchievement> GDKAchievements::get_achievements_result(Ref<GDKAchie
 	}
 
 	for (int i = 0; i < size; i++) {
-		achievementArray.push_back(memnew(GDKAchievement(&achievements[i])));
+		achievementArray.push_back(memnew(GDKAchievement(achievements[i])));
 	}
 
 	return achievementArray;

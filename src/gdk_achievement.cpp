@@ -53,55 +53,53 @@ namespace godot
 		BIND_ENUM_CONSTANT(Common);
 	}
 
-	GDKAchievement::GDKAchievement(const XblAchievement* src)
+	GDKAchievement::GDKAchievement(const XblAchievement src)
 	{
-		if (!src) return;
+		id = src.id;
+		scid = src.serviceConfigurationId;
+		name = src.name;
 
-		id = src->id;
-		scid = src->serviceConfigurationId;
-		name = src->name;
-
-		for (size_t i = 0; i < src->titleAssociationsCount; i++) {
-			Ref<GDKXblAchievementTitleAssociation> titleAssociationInfo = memnew(GDKXblAchievementTitleAssociation(&src->titleAssociations[i]));
+		for (size_t i = 0; i < src.titleAssociationsCount; i++) {
+			Ref<GDKXblAchievementTitleAssociation> titleAssociationInfo = memnew(GDKXblAchievementTitleAssociation(src.titleAssociations[i]));
 			title_associations.push_back(titleAssociationInfo);
 		}
 
-		progress_state = static_cast<GDKXblAchievementProgressState::Enum>(src->progressState);
+		progress_state = static_cast<GDKXblAchievementProgressState::Enum>(src.progressState);
 
 		progression.instantiate();
-		progression->time_unlocked = src->progression.timeUnlocked;
+		progression->time_unlocked = src.progression.timeUnlocked;
 
-		for(size_t i = 0; i < src->progression.requirementsCount; i++) {
-			Ref<GDKXblAchievementRequirement> requirement = memnew(GDKXblAchievementRequirement(&src->progression.requirements[i]));
+		for(size_t i = 0; i < src.progression.requirementsCount; i++) {
+			Ref<GDKXblAchievementRequirement> requirement = memnew(GDKXblAchievementRequirement(src.progression.requirements[i]));
 			progression->requirements.push_back(requirement);
 		}
 
-		for (size_t i = 0; i < src->mediaAssetsCount; i++) {
-			Ref<GDKXblAchievementMediaAsset> mediaAssetInfo = memnew(GDKXblAchievementMediaAsset(&src->mediaAssets[i]));
+		for (size_t i = 0; i < src.mediaAssetsCount; i++) {
+			Ref<GDKXblAchievementMediaAsset> mediaAssetInfo = memnew(GDKXblAchievementMediaAsset(src.mediaAssets[i]));
 			media_assets.push_back(mediaAssetInfo);
 		}
 
-		for (size_t i = 0; i < src->platformsAvailableOnCount; i++) {
-			String platform = String(src->platformsAvailableOn[i]);
+		for (size_t i = 0; i < src.platformsAvailableOnCount; i++) {
+			String platform = String(src.platformsAvailableOn[i]);
 			platforms.push_back(platform);
 		}
 
-		is_secret = src->isSecret;
-		unlocked_description = src->unlockedDescription;
-		locked_description = src->lockedDescription;
-		product_id = src->productId;
-		type = static_cast<GDKXblAchievementType::Enum>(src->type);
-		participation_type = static_cast<GDKXblAchievementParticipationType::Enum>(src->participationType);
-		available = Ref<GDKXblAchievementTimeWindow>(memnew(GDKXblAchievementTimeWindow(&src->available)));
+		is_secret = src.isSecret;
+		unlocked_description = src.unlockedDescription;
+		locked_description = src.lockedDescription;
+		product_id = src.productId;
+		type = static_cast<GDKXblAchievementType::Enum>(src.type);
+		participation_type = static_cast<GDKXblAchievementParticipationType::Enum>(src.participationType);
+		available = Ref<GDKXblAchievementTimeWindow>(memnew(GDKXblAchievementTimeWindow(src.available)));
 
-		for (size_t i = 0; i < src->rewardsCount; i++) {
-			Ref<GDKXblAchievementReward> reward = memnew(GDKXblAchievementReward(&src->rewards[i]));
+		for (size_t i = 0; i < src.rewardsCount; i++) {
+			Ref<GDKXblAchievementReward> reward = memnew(GDKXblAchievementReward(src.rewards[i]));
 			rewards.push_back(reward);
 		}
 
-		estimated_unlock_time = src->estimatedUnlockTime;
-		deep_link = src->deepLink;
-		is_revoked = src->isRevoked;
+		estimated_unlock_time = src.estimatedUnlockTime;
+		deep_link = src.deepLink;
+		is_revoked = src.isRevoked;
 	}
 
 	void GDKAchievement::_bind_methods () {

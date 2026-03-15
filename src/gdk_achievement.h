@@ -315,6 +315,12 @@ class GDKXblAchievementProgressChangeEntry  : public RefCounted {
 
 	public:
 		GDKXblAchievementProgressChangeEntry() = default; // required by Godot
+		GDKXblAchievementProgressChangeEntry(const XblAchievementProgressChangeEntry change_entry){
+			achievement_id = change_entry.achievementId;
+			progress_state = static_cast<GDKXblAchievementProgressState::Enum>(change_entry.progressState);
+			progression = Ref<GDKXblAchievementProgression>(memnew(GDKXblAchievementProgression(change_entry.progression)));
+		}
+
 		String achievement_id;
 		GDKXblAchievementProgressState::Enum progress_state;
 		Ref<GDKXblAchievementProgression> progression;

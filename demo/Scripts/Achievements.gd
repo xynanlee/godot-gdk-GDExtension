@@ -1,5 +1,6 @@
 extends Node
 
+var callback_context:int;
 
 func get_infos():
 	return [
@@ -47,6 +48,20 @@ func get_infos():
 			false,
 			[BaseScript.createInputInfo(BaseScript.InputType.string, "Achievement ID"),
 			BaseScript.createInputInfo(BaseScript.InputType.string, "Percentage")]
+		),
+			
+		BaseScript.createButtonInfo(
+			"Set Callback for achievement changes",
+			false,
+			Callable(self, "add_achievement_progress_change_handler"),
+			true
+		),
+			
+		BaseScript.createButtonInfo(
+			"Remove Callback for achievement changes",
+			false,
+			Callable(self, "remove_achievement_progress_change_handler"),
+			false
 		)
 	]
 	
@@ -103,3 +118,19 @@ func unlock_achievement_with_id(idInput:LineEdit):
 func set_achievement_percentage_with_id(percentage:LineEdit, idInput:LineEdit):
 	var result = await GDKAchievements.set_achievement_percentage(XUser.user, idInput.text, int(percentage.text)).completed
 	print("Hresult: 0x%08ux" % result["hresult"])
+
+func add_achievement_progress_change_handler(output:LineEdit) -> void:
+	if callback_context != 0:
+		output.text = "Callback already exists"
+		
+	callback_context = GDKAchievements.add_achievement_progress_change_handler(func (changed_achievements:Array[GDKXblAchievementProgressChangeEntry]):
+		print("Finished callback")
+		for changed_entry in changed_achievements:
+			output.text = "ID: " + changed_entry.achievement_id + ", Current Progress:" + changed_entry.progression.requirements[0].current_progress_value
+		
+	)
+	output.text = "Callback added"
+	
+func remove_achievement_progress_change_handler() -> void:
+	GDKAchievements.remove_achievement_progress_change_handler(callback_context)
+	callback_context = 0;

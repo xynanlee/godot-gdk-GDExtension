@@ -55,6 +55,8 @@ void GDKAchievements::_bind_methods() {
 	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievement", "user", "achievementId"), &GDKAchievements::get_achievement);
 	ClassDB::bind_static_method("GDKAchievements", D_METHOD("unlock_achievement", "user", "achievementId"), &GDKAchievements::unlock_achievement);
 	ClassDB::bind_static_method("GDKAchievements", D_METHOD("set_achievement_percentage", "user", "achievementId", "percentage"), &GDKAchievements::set_achievement_percentage);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("add_achievement_progress_change_handler", "callback"), &GDKAchievements::add_achievement_progress_change_handler);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("remove_achievement_progress_change_handler", "context"), &GDKAchievements::remove_achievement_progress_change_handler);
 }
 
 Ref<GDKAsyncBlock> GDKAchievements::get_achievements_async(Ref<GDKUser> user, GDKXblAchievementType::Enum achievement_type, bool unlocked_only, GDKXblAchievementOrderBy::Enum achievement_order, int skip_items, int max_items) {
@@ -215,4 +217,38 @@ Ref<GDKAsyncBlock> GDKAchievements::internal_set_achievement_percentage(Ref<GDKU
 
 	GodotGDK::CheckResult(result, successMessage, failMessage);
 	return asyncBlock;
+}
+
+int64_t GDKAchievements::add_achievement_progress_change_handler(Callable callback) {
+	XblContextHandle handle;
+
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
+		return 0;
+	}
+
+	Callable* final_callback = new Callable(callback);
+
+	XblFunctionContext returned_context = XblAchievementsAddAchievementProgressChangeHandler(handle, [](const XblAchievementProgressChangeEventArgs* eventArgs, void* context) {
+		Callable* callback = static_cast<Callable*>(context);
+
+		TypedArray<GDKXblAchievementProgressChangeEntry> change_entries;
+
+		for(int i = 0; i < eventArgs->entryCount; i++) {
+			change_entries.push_back(memnew(GDKXblAchievementProgressChangeEntry(eventArgs->updatedAchievementEntries[i])));
+		}
+
+		callback->call_deferred(change_entries);
+	}, final_callback);
+
+	return returned_context;
+}
+
+void GDKAchievements::remove_achievement_progress_change_handler(int64_t context) {
+	XblContextHandle handle;
+
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
+		return;
+	}
+
+	XblAchievementsRemoveAchievementProgressChangeHandler(handle, static_cast<XblFunctionContext>(context));
 }

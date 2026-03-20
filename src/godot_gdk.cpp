@@ -21,14 +21,18 @@ static XUserLocalId xboxUserId;
 static XUserHandle xboxUserHandle;
 static const char* SCID;
 
+static void OnGameInviteReceived(void* context, const char* inviteUri);
+
+using namespace godot;
+
 GodotGDK* GodotGDK::_instance = nullptr;
 
 void GodotGDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("InitializeGDK", "callback", "SCID"), &GodotGDK::InitializeGDK);
 
-	ClassDB::bind_static_method("GodotGDK", D_METHOD("get_xbox_title_id"), &GodotGDK::get_xbox_title_id);
-	ClassDB::bind_static_method("GodotGDK", D_METHOD("launch_new_game", "exe_path", "args", "default_user"), &GodotGDK::launch_new_game);
-	ClassDB::bind_static_method("GodotGDK", D_METHOD("launch_restart_on_crash", "args"), &GodotGDK::launch_restart_on_crash);
+	ClassDB::bind_method(D_METHOD("get_xbox_title_id"), &GodotGDK::get_xbox_title_id);
+	ClassDB::bind_method(D_METHOD("launch_new_game", "exe_path", "args", "default_user"), &GodotGDK::launch_new_game);
+	ClassDB::bind_method(D_METHOD("launch_restart_on_crash", "args"), &GodotGDK::launch_restart_on_crash);
 
 	ADD_SIGNAL(MethodInfo("game_invite_received", PropertyInfo(Variant::STRING, "invite_uri")));
 }
@@ -76,7 +80,7 @@ int GodotGDK::InitializeGDK(Callable cb, String scid) {
 
 	queue = XblGetAsyncQueue();
 
-	hr = XGameInviteRegisterForEvent(queue, this, &GodotGDK::OnGameInviteReceived, &_invite_token);
+	hr = XGameInviteRegisterForEvent(queue, this, &OnGameInviteReceived, &_invite_token);
 	if (CheckResult(hr, "Game invite event registered", "Failed to register game invite event")) {
 		_invite_registered = true;
 	}
@@ -196,7 +200,7 @@ char* GodotGDK::CopyStringToChar(String string) {
 	return out;
 }
 
-void GodotGDK::OnGameInviteReceived(void* context, const char* inviteUri) {
+static void OnGameInviteReceived(void* context, const char* inviteUri) {
 	GodotGDK* self = static_cast<GodotGDK*>(context);
 	self->emit_signal("game_invite_received", String(inviteUri ? inviteUri : ""));
 }

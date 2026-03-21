@@ -14,8 +14,8 @@
 #include <list>
 #include <xsapi-c/services_c.h>
 
-using namespace godot;
 
+namespace godot {
 class GDKAchievementsResultHandle : public RefCounted {
 	GDCLASS(GDKAchievementsResultHandle, RefCounted);
 
@@ -57,3 +57,4 @@ public:
 	static int64_t add_achievement_progress_change_handler(Callable callback);
 	static void remove_achievement_progress_change_handler(int64_t context);
 };
+}

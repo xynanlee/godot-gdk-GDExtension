@@ -202,7 +202,7 @@ char* GodotGDK::CopyStringToChar(String string) {
 
 static void OnGameInviteReceived(void* context, const char* inviteUri) {
 	GodotGDK* self = static_cast<GodotGDK*>(context);
-	self->emit_signal("game_invite_received", String(inviteUri ? inviteUri : ""));
+	self->call_deferred("emit_signal", "game_invite_received", String(inviteUri ? inviteUri : ""));
 }
 
 int64_t GodotGDK::get_xbox_title_id() {

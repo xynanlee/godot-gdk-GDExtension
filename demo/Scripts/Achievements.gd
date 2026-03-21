@@ -1,9 +1,15 @@
 extends Node
 
-var callback_context:int;
+var gdk_achievements:GDKAchievements
 
 func get_infos():
 	return [
+		BaseScript.createButtonInfo(
+			"Initialize Achievements",
+			false,
+			Callable(self,"initialize"),
+			true
+		),
 		BaseScript.createButtonInfo(
 			"Get Achievements",
 			false,
@@ -48,25 +54,34 @@ func get_infos():
 			false,
 			[BaseScript.createInputInfo(BaseScript.InputType.string, "Achievement ID"),
 			BaseScript.createInputInfo(BaseScript.InputType.string, "Percentage")]
-		),
-			
-		BaseScript.createButtonInfo(
-			"Set Callback for achievement changes",
-			false,
-			Callable(self, "add_achievement_progress_change_handler"),
-			true
-		),
-			
-		BaseScript.createButtonInfo(
-			"Remove Callback for achievement changes",
-			false,
-			Callable(self, "remove_achievement_progress_change_handler"),
-			false
 		)
 	]
+
+func initialize(output:LineEdit):
+	if XUser.user == null:
+		printerr("User not initialized first.")
+		return
+	
+	if gdk_achievements != null:
+		printerr("Achievements already initialized")
+		return
+		
+	gdk_achievements = GDKAchievements.create(XUser.user)
+	gdk_achievements.achievement_progress_changed.connect(changed_achievements)
+	output.text = "Achievements initialized"
+
+func _exit_tree() -> void:
+	if gdk_achievements != null:
+		gdk_achievements.achievement_progress_changed.disconnect(changed_achievements)
+
+func changed_achievements(achievements:Array[GDKXblAchievementProgressChangeEntry]) -> void:
+	var output_text = "";
+	for changed_entry in achievements:
+		output_text += "ID: " + changed_entry.achievement_id + ", Current Progress:" + changed_entry.progression.requirements[0].current_progress_value
+	print(output_text)
 	
 func get_achievements(output:LineEdit, max_items:SpinBox, skip_items:SpinBox, order:OptionButton, unlockedOnly:CheckBox, achievementType:OptionButton) -> void:
-	var result = await GDKAchievements.get_achievements_async(XUser.user, achievementType.get_selected_id(), unlockedOnly.button_pressed, order.get_selected_id(), int(skip_items.value), int(max_items.value)).completed
+	var result = await gdk_achievements.get_achievements_async(achievementType.get_selected_id(), unlockedOnly.button_pressed, order.get_selected_id(), int(skip_items.value), int(max_items.value)).completed
 	
 	if result["hresult"] != 0:
 		output.text = "Failed to retrieve achievements: 0x%08ux" % result["hresult"]
@@ -74,18 +89,18 @@ func get_achievements(output:LineEdit, max_items:SpinBox, skip_items:SpinBox, or
 		
 	var handle:GDKAchievementsResultHandle = result["result"]
 	
-	var achievements:Array[GDKAchievement] = GDKAchievements.get_achievements_result(handle)
+	var achievements:Array[GDKAchievement] = gdk_achievements.get_achievements_result(handle)
 	
-	while GDKAchievements.has_more_achievements(handle):
+	while gdk_achievements.has_more_achievements(handle):
 		print("get more achievements")
-		result = await GDKAchievements.get_next_achievements_async(handle, int(max_items.value)).completed
+		result = await gdk_achievements.get_next_achievements_async(handle, int(max_items.value)).completed
 		
 		if result["hresult"] != 0:
 			output.text = "Failed to retrieve achievements: 0x%08ux" % result["hresult"]
 			return
 		
 		handle = result["result"]
-		achievements += GDKAchievements.get_achievements_result(handle)
+		achievements += gdk_achievements.get_achievements_result(handle)
 	
 	var achievementNames:String = ""
 	
@@ -97,14 +112,14 @@ func get_achievements(output:LineEdit, max_items:SpinBox, skip_items:SpinBox, or
 	
 func get_achievement(output:LineEdit, idInput:LineEdit) -> void:
 	print("Start retrieving achievement")
-	var result = await GDKAchievements.get_achievement(XUser.user, idInput.text).completed
+	var result = await gdk_achievements.get_achievement(idInput.text).completed
 	
 	if result["hresult"] != 0:
 		output.text = "Failed to retrieve achievements: 0x%08ux" % result["hresult"]
 		return
 		
 	var handle:GDKAchievementsResultHandle = result["result"]
-	var achievements:Array[GDKAchievement] = GDKAchievements.get_achievements_result(handle)
+	var achievements:Array[GDKAchievement] = gdk_achievements.get_achievements_result(handle)
 	
 	if(achievements.size() > 0):
 		var achievement:GDKAchievement = achievements[0]
@@ -112,25 +127,9 @@ func get_achievement(output:LineEdit, idInput:LineEdit) -> void:
 		output.text = achievement.name + " " + achievement.id + " " + str(achievement.is_secret) + " " + achievement.locked_desc + " " + str(progression.time_unlocked)
 	
 func unlock_achievement_with_id(idInput:LineEdit):
-	var result = await GDKAchievements.unlock_achievement(XUser.user, idInput.text).completed
+	var result = await gdk_achievements.unlock_achievement(idInput.text).completed
 	print("Hresult: 0x%08ux" % result["hresult"])
 	
 func set_achievement_percentage_with_id(percentage:LineEdit, idInput:LineEdit):
-	var result = await GDKAchievements.set_achievement_percentage(XUser.user, idInput.text, int(percentage.text)).completed
+	var result = await gdk_achievements.set_achievement_percentage(idInput.text, int(percentage.text)).completed
 	print("Hresult: 0x%08ux" % result["hresult"])
-
-func add_achievement_progress_change_handler(output:LineEdit) -> void:
-	if callback_context != 0:
-		output.text = "Callback already exists"
-		
-	callback_context = GDKAchievements.add_achievement_progress_change_handler(func (changed_achievements:Array[GDKXblAchievementProgressChangeEntry]):
-		print("Finished callback")
-		for changed_entry in changed_achievements:
-			output.text = "ID: " + changed_entry.achievement_id + ", Current Progress:" + changed_entry.progression.requirements[0].current_progress_value
-		
-	)
-	output.text = "Callback added"
-	
-func remove_achievement_progress_change_handler() -> void:
-	GDKAchievements.remove_achievement_progress_change_handler(callback_context)
-	callback_context = 0;

@@ -48,18 +48,57 @@ void GDKAchievementsResultHandle::_notification(int p_what) {
 }
 
 void GDKAchievements::_bind_methods() {
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievements_async", "user", "achievement_type", "unlocked_only", "achievement_order", "skip_items", "max_items"), &GDKAchievements::get_achievements_async);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievements_result", "result_handle"), &GDKAchievements::get_achievements_result);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("has_more_achievements", "result_handle"), &GDKAchievements::has_more_achievements);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_next_achievements_async", "result_handle", "max_items"), &GDKAchievements::get_next_achievements_async);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("get_achievement", "user", "achievementId"), &GDKAchievements::get_achievement);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("unlock_achievement", "user", "achievementId"), &GDKAchievements::unlock_achievement);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("set_achievement_percentage", "user", "achievementId", "percentage"), &GDKAchievements::set_achievement_percentage);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("add_achievement_progress_change_handler", "callback"), &GDKAchievements::add_achievement_progress_change_handler);
-	ClassDB::bind_static_method("GDKAchievements", D_METHOD("remove_achievement_progress_change_handler", "context"), &GDKAchievements::remove_achievement_progress_change_handler);
+	ClassDB::bind_static_method("GDKAchievements", D_METHOD("create", "user"), &GDKAchievements::create);
+	ClassDB::bind_method(D_METHOD("get_achievements_async", "achievement_type", "unlocked_only", "achievement_order", "skip_items", "max_items"), &GDKAchievements::get_achievements_async);
+	ClassDB::bind_method(D_METHOD("get_achievements_result", "result_handle"), &GDKAchievements::get_achievements_result);
+	ClassDB::bind_method(D_METHOD("has_more_achievements", "result_handle"), &GDKAchievements::has_more_achievements);
+	ClassDB::bind_method(D_METHOD("get_next_achievements_async", "result_handle", "max_items"), &GDKAchievements::get_next_achievements_async);
+	ClassDB::bind_method(D_METHOD("get_achievement", "achievementId"), &GDKAchievements::get_achievement);
+	ClassDB::bind_method(D_METHOD("unlock_achievement", "achievementId"), &GDKAchievements::unlock_achievement);
+	ClassDB::bind_method(D_METHOD("set_achievement_percentage", "achievementId", "percentage"), &GDKAchievements::set_achievement_percentage);
+
+	ADD_SIGNAL(MethodInfo("achievement_progress_changed", PropertyInfo(Variant::OBJECT, "change_info")));
 }
 
-Ref<GDKAsyncBlock> GDKAchievements::get_achievements_async(Ref<GDKUser> user, GDKXblAchievementType::Enum achievement_type, bool unlocked_only, GDKXblAchievementOrderBy::Enum achievement_order, int skip_items, int max_items) {
+Ref<GDKAchievements> GDKAchievements::create(Ref<GDKUser> user) {
+	Ref<GDKAchievements> wrapper;
+	if (user != nullptr) {
+		wrapper.instantiate();
+		wrapper->_user = user;
+
+		XblContextHandle handle;
+
+		if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
+			return wrapper;
+		}
+
+		wrapper->_progress_change_context = XblAchievementsAddAchievementProgressChangeHandler(handle, [](const XblAchievementProgressChangeEventArgs* eventArgs, void* context) {
+			GDKAchievements* gdk_achievements = static_cast<GDKAchievements*>(context);
+			TypedArray<GDKXblAchievementProgressChangeEntry> change_entries;
+
+			for(int i = 0; i < eventArgs->entryCount; i++) {
+				change_entries.push_back(memnew(GDKXblAchievementProgressChangeEntry(eventArgs->updatedAchievementEntries[i])));
+			}
+
+			gdk_achievements->call_deferred("emit_signal", "achievement_progress_changed", change_entries);
+		}, wrapper.ptr());
+	}
+	return wrapper;
+}
+
+void GDKAchievements::_notification(int p_what) {
+	if (p_what == NOTIFICATION_PREDELETE) {
+		XblContextHandle handle;
+
+		if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
+			return;
+		}
+
+		XblAchievementsRemoveAchievementProgressChangeHandler(handle, _progress_change_context);
+	}
+}
+
+Ref<GDKAsyncBlock> GDKAchievements::get_achievements_async(GDKXblAchievementType::Enum achievement_type, bool unlocked_only, GDKXblAchievementOrderBy::Enum achievement_order, int skip_items, int max_items) {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
 	Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
 
@@ -89,7 +128,7 @@ Ref<GDKAsyncBlock> GDKAchievements::get_achievements_async(Ref<GDKUser> user, GD
 		return asyncBlock;
 	}
 
-	HRESULT hr = XblAchievementsGetAchievementsForTitleIdAsync(handle, user->get_id(), titleID, static_cast<XblAchievementType>(achievement_type), unlocked_only, static_cast<XblAchievementOrderBy>(achievement_order), skip_items, max_items, asyncBlock->get_block());
+	HRESULT hr = XblAchievementsGetAchievementsForTitleIdAsync(handle, _user->get_id(), titleID, static_cast<XblAchievementType>(achievement_type), unlocked_only, static_cast<XblAchievementOrderBy>(achievement_order), skip_items, max_items, asyncBlock->get_block());
 
 	GodotGDK::CheckResult(hr, "Successfully started retrieving achievements", "Failed to start retrieving achievements");
 
@@ -153,7 +192,7 @@ Ref<GDKAsyncBlock> GDKAchievements::get_next_achievements_async(Ref<GDKAchieveme
 	return asyncBlock;
 }
 
-Ref<GDKAsyncBlock> GDKAchievements::get_achievement(Ref<GDKUser> user, String achievementId) {
+Ref<GDKAsyncBlock> GDKAchievements::get_achievement(String achievementId) {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
 	Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
 
@@ -178,23 +217,23 @@ Ref<GDKAsyncBlock> GDKAchievements::get_achievement(Ref<GDKUser> user, String ac
 		return asyncBlock;
 	}
 
-	HRESULT hr = XblAchievementsGetAchievementAsync(handle, user->get_id(), GodotGDK::GetSCID(), achievementId.utf8(), asyncBlock->get_block());
+	HRESULT hr = XblAchievementsGetAchievementAsync(handle, _user->get_id(), GodotGDK::GetSCID(), achievementId.utf8(), asyncBlock->get_block());
 
 	GodotGDK::CheckResult(hr, "Successfully started retrieving achievements", "Failed to start retrieving achievements");
 
 	return asyncBlock;
 }
 
-Ref<GDKAsyncBlock> GDKAchievements::unlock_achievement(Ref<GDKUser> user, String achievementId) {
-	return internal_set_achievement_percentage(user, achievementId, 100, "Successfully unlocked achievement", "Failed to unlock achievement");
+Ref<GDKAsyncBlock> GDKAchievements::unlock_achievement(String achievementId) {
+	return internal_set_achievement_percentage(achievementId, 100, "Successfully unlocked achievement", "Failed to unlock achievement");
 }
 
 
-Ref<GDKAsyncBlock> GDKAchievements::set_achievement_percentage(Ref<GDKUser> user, String achievementId, uint32_t percentage) {
-	return internal_set_achievement_percentage(user, achievementId, percentage, "Successfully set achievement progress", "Failed to set achievement progress");
+Ref<GDKAsyncBlock> GDKAchievements::set_achievement_percentage(String achievementId, uint32_t percentage) {
+	return internal_set_achievement_percentage(achievementId, percentage, "Successfully set achievement progress", "Failed to set achievement progress");
 }
 
-Ref<GDKAsyncBlock> GDKAchievements::internal_set_achievement_percentage(Ref<GDKUser> user, String achievementId, uint32_t percentage, const String &successMessage, const String &failMessage) {
+Ref<GDKAsyncBlock> GDKAchievements::internal_set_achievement_percentage(String achievementId, uint32_t percentage, const String &successMessage, const String &failMessage) {
 	XTaskQueueHandle queue = GDKHelpers::get_async_queue();
 	Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
 
@@ -213,42 +252,8 @@ Ref<GDKAsyncBlock> GDKAchievements::internal_set_achievement_percentage(Ref<GDKU
 		wrapper->emit(return_data);
 	});
 
-	HRESULT result = XblAchievementsUpdateAchievementAsync(handle, user->get_id(), achievementId.utf8(), percentage, asyncBlock->get_block());
+	HRESULT result = XblAchievementsUpdateAchievementAsync(handle, _user->get_id(), achievementId.utf8(), percentage, asyncBlock->get_block());
 
 	GodotGDK::CheckResult(result, successMessage, failMessage);
 	return asyncBlock;
-}
-
-int64_t GDKAchievements::add_achievement_progress_change_handler(Callable callback) {
-	XblContextHandle handle;
-
-	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
-		return 0;
-	}
-
-	Callable* final_callback = new Callable(callback);
-
-	XblFunctionContext returned_context = XblAchievementsAddAchievementProgressChangeHandler(handle, [](const XblAchievementProgressChangeEventArgs* eventArgs, void* context) {
-		Callable* callback = static_cast<Callable*>(context);
-
-		TypedArray<GDKXblAchievementProgressChangeEntry> change_entries;
-
-		for(int i = 0; i < eventArgs->entryCount; i++) {
-			change_entries.push_back(memnew(GDKXblAchievementProgressChangeEntry(eventArgs->updatedAchievementEntries[i])));
-		}
-
-		callback->call_deferred(change_entries);
-	}, final_callback);
-
-	return returned_context;
-}
-
-void GDKAchievements::remove_achievement_progress_change_handler(int64_t context) {
-	XblContextHandle handle;
-
-	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
-		return;
-	}
-
-	XblAchievementsRemoveAchievementProgressChangeHandler(handle, static_cast<XblFunctionContext>(context));
 }

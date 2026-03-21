@@ -12,13 +12,21 @@
 #include "gdk_achievements.h"
 #include "gdk_game_save.h"
 #include "gdk_user.h"
+#include "gdk_error.h"
 
 using namespace godot;
 
 static GodotGDK* gdk = nullptr;
+static GDKError* gdk_error = nullptr;
 
 void initialize_gdextension_types(ModuleInitializationLevel p_level)
 {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		GDREGISTER_CLASS(GDKError);
+		gdk_error = memnew(GDKError);
+		Engine::get_singleton()->register_singleton("GDKError", gdk_error);
+	}
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
@@ -48,6 +56,12 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 }
 
 void uninitialize_gdextension_types(ModuleInitializationLevel p_level) {
+	if (p_level == MODULE_INITIALIZATION_LEVEL_CORE) {
+		Engine::get_singleton()->unregister_singleton("GDKError");
+		memdelete(gdk_error);
+		gdk_error = nullptr;
+	}
+
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}

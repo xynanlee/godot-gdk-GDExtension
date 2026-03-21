@@ -205,11 +205,11 @@ static void OnGameInviteReceived(void* context, const char* inviteUri) {
 	self->emit_signal("game_invite_received", String(inviteUri ? inviteUri : ""));
 }
 
-int GodotGDK::get_xbox_title_id() {
+int64_t GodotGDK::get_xbox_title_id() {
 	uint32_t title_id = 0;
 	HRESULT hr = XGameGetXboxTitleId(&title_id);
 	ERR_FAIL_COND_V_MSG(FAILED(hr), 0, vformat("XGameGetXboxTitleId Error: 0x%08ux", (uint64_t)hr));
-	return (int)title_id;
+	return (int64_t)title_id;
 }
 
 void GodotGDK::launch_new_game(const String &exe_path, const String &args, Ref<GDKUser> default_user) {
@@ -218,9 +218,9 @@ void GodotGDK::launch_new_game(const String &exe_path, const String &args, Ref<G
 	XLaunchNewGame(exe_path.utf8().get_data(), args_ptr, user);
 }
 
-int GodotGDK::launch_restart_on_crash(const String &args) {
+int64_t GodotGDK::launch_restart_on_crash(const String &args) {
 	const char *args_ptr = args.is_empty() ? nullptr : args.utf8().get_data();
 	HRESULT hr = XLaunchRestartOnCrash(args_ptr, 0);
-	ERR_FAIL_COND_V_MSG(FAILED(hr), (int)hr, vformat("XLaunchRestartOnCrash Error: 0x%08ux", (uint64_t)hr));
-	return (int)hr;
+	ERR_FAIL_COND_V_MSG(FAILED(hr), (int64_t)hr, vformat("XLaunchRestartOnCrash Error: 0x%08ux", (uint64_t)hr));
+	return (int64_t)hr;
 }

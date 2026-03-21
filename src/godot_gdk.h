@@ -53,8 +53,8 @@ namespace godot {
 		static char* CopyStringToChar(String string);
 
 		// XGame
-		int get_xbox_title_id();
+		int64_t get_xbox_title_id();
 		void launch_new_game(const String &exe_path, const String &args, Ref<GDKUser> default_user);
-		int launch_restart_on_crash(const String &args);
+		int64_t launch_restart_on_crash(const String &args);
 	};
 }

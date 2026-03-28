@@ -1,7 +1,14 @@
 #include "gdk_error.h"
+#include <classes/engine.hpp>
 
 using namespace godot;
 
+void GDKXErrorOptions::_bind_methods() {
+    BIND_BITFIELD_FLAG(GDKXErrorOptions::None);
+    BIND_BITFIELD_FLAG(GDKXErrorOptions::OutputDebugStringOnError);
+    BIND_BITFIELD_FLAG(GDKXErrorOptions::DebugBreakOnError);
+    BIND_BITFIELD_FLAG(GDKXErrorOptions::FailFastOnError);
+}
 
 void GDKError::_bind_methods() {
     BIND_ENUM_CONSTANT(GDK_OK);
@@ -84,11 +91,43 @@ void GDKError::_bind_methods() {
     BIND_ENUM_CONSTANT(GDK_GAMESTREAMING_CUSTOM_RESOLUTION_TOO_MANY_PIXELS);
     BIND_ENUM_CONSTANT(GDK_GAMESTREAMING_INVALID_CUSTOM_RESOLUTION);
 
+    ClassDB::bind_method(D_METHOD("to_readable_code", "code"), &GDKError::to_readable_code);
+    ADD_SIGNAL(MethodInfo("on_error", PropertyInfo(Variant::INT, "code"), PropertyInfo(Variant::STRING, "message")));
+}
 
-    const StringName& className = get_class_static();
-    ClassDB::bind_static_method(className, D_METHOD("to_readable_code", "code"), &GDKError::to_readable_code);
+void GDKError::_notification(int p_what) {
+    if (Engine::get_singleton()->is_editor_hint()) {
+        return;
+    }
+
+    switch (p_what)
+    {
+    case NOTIFICATION_PREDELETE:
+        {
+            XErrorSetCallback(nullptr, nullptr);
+        }
+        break;
+    }
+}
+
+bool ErrorCallback(HRESULT hr, const char* message, void* context) {
+    GDKError* error = static_cast<GDKError*>(context);
+    error->emit_signal("on_error", (int64_t)hr, String(message));
+    return true;
+}
+
+GDKError::GDKError() {
+    XErrorSetCallback(ErrorCallback, this);
 }
 
 String GDKError::to_readable_code(int64_t code) {
-    return vformat("0x%08ux", (uint64_t)code);
+	return vformat("0x%08ux", (uint64_t)code);
 }
+
+void GDKError::SetErrorOptions(BitField<GDKXErrorOptions::Enum> optionsDebuggerPresent, BitField<GDKXErrorOptions::Enum> optionsDebuggerNotPresent) {
+    XErrorOptions debuggerPresent = static_cast<XErrorOptions>((int64_t)optionsDebuggerPresent);
+    XErrorOptions debuggerNotPresent = static_cast<XErrorOptions>((int64_t)optionsDebuggerNotPresent);
+
+    XErrorSetOptions(debuggerPresent, debuggerNotPresent);
+}
+

@@ -3,8 +3,25 @@
 #include <classes/ref_counted.hpp>
 #include <windows.h>
 #include <XGameErr.h>
+#include <XError.h>
 
 namespace godot {
+
+class GDKXErrorOptions : public Object {
+    GDCLASS(GDKXErrorOptions, Object)
+    
+    protected:
+    static void _bind_methods();
+    
+    public:
+    enum Enum: uint32_t {
+        None = XErrorOptions::None,
+        OutputDebugStringOnError = XErrorOptions::OutputDebugStringOnError,
+        DebugBreakOnError = XErrorOptions::DebugBreakOnError,
+        FailFastOnError = XErrorOptions::FailFastOnError
+    };
+};
+
 class GDKError: public RefCounted {
     GDCLASS(GDKError, RefCounted)
 
@@ -91,7 +108,13 @@ public:
 
 protected:
     static void _bind_methods();
-    static String to_readable_code(int64_t code);
+    void _notification(int p_what);
+    
+public:
+    GDKError();
+    String to_readable_code(int64_t code);
+    void SetErrorOptions(BitField<GDKXErrorOptions::Enum> optionsDebuggerPresent, BitField<GDKXErrorOptions::Enum> optionsDebuggerNotPresent);
 };
-
 }
+
+VARIANT_BITFIELD_CAST(GDKXErrorOptions::Enum);

@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include "gdk_game_save_blob.h"
-#include "gdk_game_save_blob_info.h"
-
 #include <Windows.h>
 #include <winapifamily.h>
 #include <objbase.h>
@@ -11,9 +8,6 @@
 #include "godot_cpp/variant/variant.hpp"
 #include <XAsync.h>
 #include <XGameSave.h>
-#include <XTaskQueue.h>
-#include <list>
-#include <xsapi-c/services_c.h>
 
 #include <vector>
 
@@ -30,7 +24,7 @@ class GDKGameSave : public RefCounted {
 	static bool CALLBACK GetBlobInfoCallback(const XGameSaveBlobInfo* info, void* context);
 	void EnumerateBlobInfoByName();
 
-	static void GetBlobInfoFinal(XGameSaveContainerHandle* containerHandle, const char* path, std::vector<const XGameSaveBlobInfo*>* blobArray);
+	static void GetBlobInfoFinal(XGameSaveContainerHandle* containerHandle, const char* path, Vector<const XGameSaveBlobInfo*>* blobArray);
 	static void test(XGameSaveBlobInfo blobInfo, void *context);
 
 protected:

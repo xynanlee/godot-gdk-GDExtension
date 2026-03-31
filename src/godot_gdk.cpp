@@ -1,6 +1,8 @@
 #include "godot_gdk.h"
 #include "gdk_user.h"
 
+#include "godot_cpp/core/class_db.hpp"
+
 #include <Windows.h>
 #include <winapifamily.h>
 #include <objbase.h>
@@ -12,7 +14,6 @@
 #include <XGameInvite.h>
 
 #include <iomanip>
-#include <ios>
 #include <sstream>
 #include <string>
 
@@ -121,7 +122,7 @@ void CALLBACK GodotGDK::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsy
 
 	XblContextHandle handle;
 
-	if (!CreateContextHandle(&handle)) {
+	if (FAILED(XblContextCreateHandle(GodotGDK::GetUserHandle(), &handle))) {
 		delete asyncBlock;
 		return;
 	}
@@ -141,12 +142,6 @@ void CALLBACK GodotGDK::Identity_TrySignInDefaultUserSilently_Callback(_In_ XAsy
 
 	delete callback;
 	delete asyncBlock;
-}
-
-bool GodotGDK::CreateContextHandle(XblContextHandle* handle) {
-	HRESULT hr = XblContextCreateHandle(xboxUserHandle, handle);
-
-	return CheckResult(hr, "Successfully created handle", "Creating handle failed");
 }
 
 XTaskQueueHandle GodotGDK::GetQueueHandle() {
@@ -172,18 +167,15 @@ const char* GodotGDK::GetSCID() {
 	return SCID;
 }
 
-bool GodotGDK::CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage) {
+bool GodotGDK::CheckResult(HRESULT result, String succeedMessage, String errorMessage) {
 	if (FAILED(result)) {
-		std::ostringstream oss;
-		oss << errorMessage
-			<< " HRESULT=0x"
-			<< std::hex << std::setw(8) << std::setfill('0') << result;
-		ERR_PRINT(oss.str().c_str());
+		String resultString = "HRESULT=0x%X";
+		ERR_PRINT(errorMessage + ", " + resultString % (int64_t)(unsigned int)result);
 		return false;
 	}
 
 	if(succeedMessage != "") {
-		print_line(succeedMessage.c_str());
+		print_line(succeedMessage);
 	}
 
 	return true;

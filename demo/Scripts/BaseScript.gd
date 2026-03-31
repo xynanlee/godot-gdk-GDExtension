@@ -4,6 +4,8 @@ class_name BaseScript
 var currentNode:Control;
 @export var SCID:String
 
+enum InputType{string, int, enums, bool}
+
 static func createButtonInfo(text:String, requiresSubMenu:bool, function:Callable, hasOutput:bool = false, inputs = []):
 	return {
 		"name" = text,
@@ -13,9 +15,9 @@ static func createButtonInfo(text:String, requiresSubMenu:bool, function:Callabl
 		"inputs" = inputs
 	}
 
-static func createInputInfo(useEnumInputs:bool, input):
+static func createInputInfo(inputType:InputType, input):
 	return {
-		"useEnumInputs" = useEnumInputs,
+		"inputType" = inputType,
 		"input" = input
 	}
 	
@@ -96,16 +98,26 @@ func create_menu(menuName:String, previousMenu:String = ""):
 func create_input_field(input):
 	var inputField
 	
-	if(input["useEnumInputs"]):
-		inputField = OptionButton.new()
-		var enumValues = input["input"]
-		
-		for key in enumValues:
-			inputField.add_item(key, enumValues[key])
-	else:
-		inputField = LineEdit.new()
-		inputField.expand_to_text_length = true
-		inputField.placeholder_text = input["input"]
+	match input["inputType"]:
+		InputType.enums:
+			inputField = OptionButton.new()
+			var enumValues = input["input"]
+			
+			for key in enumValues:
+				inputField.add_item(key, enumValues[key])
+		InputType.string:
+			inputField = LineEdit.new()
+			inputField.expand_to_text_length = true
+			inputField.placeholder_text = input["input"]
+		InputType.int:
+			inputField = SpinBox.new()
+			var lineEdit:LineEdit = inputField.get_line_edit()
+			lineEdit.focus_entered.connect(func(line:LineEdit):
+				line.text = input["input"]
+			)
+		InputType.bool:
+			inputField = CheckBox.new()
+			inputField.text = input["input"]
 	
 	return inputField
 

@@ -1,6 +1,7 @@
 extends Node
+class_name XUser
 
-var user:GDKUser
+static var user:GDKUser
 var otherUser:GDKUser
 var deferral
 var texture_node:Sprite2D
@@ -12,7 +13,7 @@ func get_infos():
 			false, 
 			Callable(self, "add_user_async"), 
 			false,
-			[BaseScript.createInputInfo(true, {
+			[BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"None" : GDKXUserAddOptions.None, 
 				"AddDefaultUserSilently" : GDKXUserAddOptions.AddDefaultUserSilently, 
 				"AllowGuests": GDKXUserAddOptions.AllowGuests, 
@@ -24,7 +25,7 @@ func get_infos():
 			false, 
 			Callable(self, "add_user_by_id_with_ui_async"), 
 			false,
-			[BaseScript.createInputInfo(true, {
+			[BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"None" : GDKXUserAddOptions.None, 
 				"AddDefaultUserSilently" : GDKXUserAddOptions.AddDefaultUserSilently, 
 				"AllowGuests": GDKXUserAddOptions.AllowGuests, 
@@ -42,7 +43,7 @@ func get_infos():
 			false,
 			Callable(self, "find_user_by_id"), 
 			false,
-			[BaseScript.createInputInfo(false, "User ID")]
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "User ID")]
 		),
 		BaseScript.createButtonInfo(
 			"Is signing out supported", 
@@ -55,14 +56,14 @@ func get_infos():
 			false,
 			Callable(self, "find_user_by_local_id"), 
 			false,
-			[BaseScript.createInputInfo(false, "User ID")]
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "User ID")]
 		),
 		BaseScript.createButtonInfo(
 			"Find user by device id", 
 			false,
 			Callable(self, "find_user_by_device"), 
 			true,
-			[BaseScript.createInputInfo(false, "device id")]
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "device id")]
 		),
 		BaseScript.createButtonInfo(
 			"Duplicate user", 
@@ -115,7 +116,7 @@ func get_infos():
 			false,
 			Callable(self, "get_gamer_tag"),
 			true,
-			[BaseScript.createInputInfo(true, {
+			[BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"Classic" : GDKXUserGamertagComponent.Classic,
 				"Modern" : GDKXUserGamertagComponent.Modern,
 				"ModernSuffix" : GDKXUserGamertagComponent.ModernSuffix,
@@ -127,7 +128,7 @@ func get_infos():
 			false,
 			Callable(self, "get_gamer_picture_async"), 
 			false,
-			[BaseScript.createInputInfo(true, {
+			[BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"Small" : GDKXUserGamerPictureSize.Small, 
 				"Medium" : GDKXUserGamerPictureSize.Medium, 
 				"Large": GDKXUserGamerPictureSize.Large, 
@@ -145,11 +146,11 @@ func get_infos():
 			false,
 			Callable(self, "check_privilege"),
 			true,
-			[BaseScript.createInputInfo(true, {
+			[BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"None" : GDKXUserPrivilegeOptions.None, 
 				"AllUsers" : GDKXUserPrivilegeOptions.AllUsers
 				} ),
-			BaseScript.createInputInfo(true, {
+			BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"CrossPlay" : GDKXUserPrivilege.CrossPlay, 
 				"Clubs" : GDKXUserPrivilege.Clubs,
 				"Sessions" : GDKXUserPrivilege.Sessions, 
@@ -172,11 +173,11 @@ func get_infos():
 			false,
 			Callable(self, "resolve_privilege_with_ui_async"),
 			true,
-			[BaseScript.createInputInfo(true, {
+			[BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"None" : GDKXUserPrivilegeOptions.None, 
 				"AllUsers" : GDKXUserPrivilegeOptions.AllUsers
 				} ),
-			BaseScript.createInputInfo(true, {
+			BaseScript.createInputInfo(BaseScript.InputType.enums, {
 				"CrossPlay" : GDKXUserPrivilege.CrossPlay, 
 				"Clubs" : GDKXUserPrivilege.Clubs,
 				"Sessions" : GDKXUserPrivilege.Sessions, 
@@ -205,7 +206,7 @@ func get_infos():
 			false,
 			Callable(self, "resolve_issue_with_ui_async"),
 			true,
-			[BaseScript.createInputInfo(false, "URL")]
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "URL")]
 		),
 		BaseScript.createButtonInfo(
 			"Get sign out deferral", 
@@ -294,7 +295,6 @@ func get_state(output:LineEdit) -> void:
 func get_gamer_tag(output:LineEdit, gamertag_type:OptionButton) -> void:
 	var gamertag:String = user.get_gamer_tag(gamertag_type.get_selected_id())
 	output.text = gamertag
-	print(gamertag.length())
 	
 func get_gamer_picture_async(imageSize:OptionButton) -> void:
 	var data = await user.get_gamer_picture_async(imageSize.get_selected_id()).completed

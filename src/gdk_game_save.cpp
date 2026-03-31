@@ -1,20 +1,17 @@
 ﻿#include "gdk_game_save.h"
 
-#include "gdk_achievement.h"
 #include "gdk_game_save_blob.h"
 #include "godot_gdk.h"
-#include "../godot-cpp/include/godot_cpp/godot.hpp"
-#include "../godot-cpp/include/godot_cpp/core/memory.hpp"
-#include "../godot-cpp/include/godot_cpp/core/print_string.hpp"
+#include "godot_cpp/core/class_db.hpp"
+#include "godot_cpp/core/memory.hpp"
+#include "godot_cpp/core/print_string.hpp"
 
 #include <Windows.h>
 #include <winapifamily.h>
 #include <objbase.h>
 #include <XGameRuntimeInit.h>
-#include <XTaskQueue.h>
 #include <xsapi-c/services_c.h>
 #include <XUser.h>
-#include <XGame.h>
 #include <XGameSave.h>
 
 #include <iomanip>
@@ -115,7 +112,7 @@ godot::Array GDKGameSave::ReadBlobData(godot::String containerName, godot::Array
 	XGameSaveContainerHandle *containerHandle = CreateContainerHandle();
 
 	print_line("Pre callback");
-	std::vector<const XGameSaveBlobInfo *> *blobInfos = new std::vector<const XGameSaveBlobInfo *>();
+	Vector<const XGameSaveBlobInfo *> *blobInfos = new Vector<const XGameSaveBlobInfo *>();
 
 	if (size == 0 || (size == 1 && paths[0] == "")) {
 		GetBlobInfoFinal(nullptr, nullptr, blobInfos);
@@ -135,13 +132,13 @@ godot::Array GDKGameSave::ReadBlobData(godot::String containerName, godot::Array
 	if (blobInfos->size() == 0) {
 		ERR_PRINT("There is no save files with given path.");
 	} else {
-		auto newSize = static_cast<uint32_t>(blobInfos->size());
+		uint32_t newSize = static_cast<uint32_t>(blobInfos->size());
 		size_t allBlobsSize = 0;
 		const char **paths2 = new const char *[newSize];
 
 		for (int i = 0; i < newSize; i++) {
-			paths2[i] = blobInfos->at(i)->name;
-			allBlobsSize += sizeof(XGameSaveBlob) + strlen(blobInfos->at(i)->name) + 1 + blobInfos->at(i)->size;
+			paths2[i] = blobInfos->get(i)->name;
+			allBlobsSize += sizeof(XGameSaveBlob) + strlen(blobInfos->get(i)->name) + 1 + blobInfos->get(i)->size;
 		}
 
 		blobData = static_cast<XGameSaveBlob*>(malloc(allBlobsSize));
@@ -190,7 +187,7 @@ void GDKGameSave::GetBlobInfo(godot::String containerName, godot::String path, g
 	XGameSaveCloseContainer(*containerHandle);
 }
 
-void GDKGameSave::GetBlobInfoFinal(XGameSaveContainerHandle *containerHandle, const char *path, std::vector<const XGameSaveBlobInfo *> *blobArray) {
+void GDKGameSave::GetBlobInfoFinal(XGameSaveContainerHandle *containerHandle, const char *path, Vector<const XGameSaveBlobInfo *> *blobArray) {
 	HRESULT hr;
 	bool closeContainerHandle = false;
 
@@ -216,7 +213,7 @@ void GDKGameSave::GetBlobInfoFinal(XGameSaveContainerHandle *containerHandle, co
 
 bool CALLBACK GDKGameSave::GetBlobInfoCallback(const XGameSaveBlobInfo *info, void *context) {
 	print_line("Callback");
-	std::vector<const XGameSaveBlobInfo *> *blobArray = static_cast<std::vector<const XGameSaveBlobInfo *> *>(context);
+	Vector<const XGameSaveBlobInfo *> *blobArray = static_cast<Vector<const XGameSaveBlobInfo *> *>(context);
 	blobArray->push_back(info);
 	return true;
 }

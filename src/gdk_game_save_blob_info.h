@@ -2,15 +2,11 @@
 
 #include <Windows.h>
 #include <winapifamily.h>
-#include <objbase.h>
 #include "godot_cpp/classes/ref_counted.hpp"
 #include "godot_cpp/classes/wrapped.hpp"
 #include "godot_cpp/variant/variant.hpp"
-#include <XAsync.h>
 #include <XGameSave.h>
-#include <XTaskQueue.h>
 #include <list>
-#include <xsapi-c/services_c.h>
 
 using namespace godot;
 

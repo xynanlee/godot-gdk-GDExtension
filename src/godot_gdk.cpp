@@ -167,10 +167,11 @@ const char* GodotGDK::GetSCID() {
 	return SCID;
 }
 
-bool GodotGDK::CheckResult(HRESULT result, String succeedMessage, String errorMessage) {
+bool GodotGDK::CheckResult(HRESULT result, const String& succeedMessage, const String& errorMessage) {
 	if (FAILED(result)) {
 		String resultString = "HRESULT=0x%X";
-		ERR_PRINT(errorMessage + ", " + resultString % (int64_t)(unsigned int)result);
+		String errorMsg = vformat("%s, HRESULT=0x%X", errorMessage, (uint64_t)result);
+		ERR_PRINT(errorMsg);
 		return false;
 	}
 

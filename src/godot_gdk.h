@@ -46,7 +46,7 @@ namespace godot {
 		static XUserHandle GetUserHandle();
 		static XAsyncBlock* GodotGDK::CreateAsyncBlock();
 		static const char* GetSCID();
-		static bool CheckResult(HRESULT result, std::string succeedMessage, std::string errorMessage);
+		static bool CheckResult(HRESULT result, const String& succeedMessage, const String& errorMessage);
 		static char* CopyStringToChar(String string);
 
 		// XGame

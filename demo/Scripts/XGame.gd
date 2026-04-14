@@ -14,8 +14,8 @@ func get_infos():
 			Callable(self, "launch_new_game"),
 			false,
 			[
-				BaseScript.createInputInfo(false, "Exe Path"),
-				BaseScript.createInputInfo(false, "Args")
+				BaseScript.createInputInfo(BaseScript.InputType.string, "Exe Path"),
+				BaseScript.createInputInfo(BaseScript.InputType.string, "Args")
 			]
 		),
 		BaseScript.createButtonInfo(
@@ -23,7 +23,7 @@ func get_infos():
 			false,
 			Callable(self, "launch_restart_on_crash"),
 			false,
-			[BaseScript.createInputInfo(false, "Args")]
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "Args")]
 		),
 	]
 

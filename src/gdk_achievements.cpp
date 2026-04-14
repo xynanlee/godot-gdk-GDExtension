@@ -18,6 +18,7 @@
 #include <XGame.h>
 
 #include <iomanip>
+using namespace godot;
 
 Ref<GDKAchievementsResultHandle> GDKAchievementsResultHandle::create(XblAchievementsResultHandle result_handle) {
 	Ref<GDKAchievementsResultHandle> wrapper;
@@ -253,7 +254,6 @@ Ref<GDKAsyncBlock> GDKAchievements::internal_set_achievement_percentage(String a
 	});
 
 	HRESULT result = XblAchievementsUpdateAchievementAsync(handle, _user->get_id(), achievementId.utf8(), percentage, asyncBlock->get_block());
-
-	GodotGDK::CheckResult(result, successMessage, failMessage);
+	ERR_FAIL_COND_V_MSG(FAILED(result), nullptr, vformat("XblAchievementsUpdateAchievementAsync: Error 0x%08ux", (uint64_t)result));
 	return asyncBlock;
 }

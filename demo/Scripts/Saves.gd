@@ -4,9 +4,35 @@ var saveSystem:GDKGameSave;
 
 func get_infos():
 	return [
-		BaseScript.buttonInfo("Load File", false, Callable(self, "ReadBlob"), true, ["File name"]),
-		BaseScript.buttonInfo("Save File as String", false, Callable(self, "WriteStringBlob"), false, ["File name", "Data to save"]),
-		BaseScript.buttonInfo("Save File as Byte Array", false, Callable(self, "WriteByteBlob"), false, ["File name", "Data to save"])
+		BaseScript.createButtonInfo(
+			"Load File",
+			false,
+			Callable(self, "ReadBlob"),
+			true,
+			[BaseScript.createInputInfo(BaseScript.InputType.string, "File name")]
+		),
+		
+		BaseScript.createButtonInfo(
+			"Save File as String",
+			false,
+			Callable(self, "WriteStringBlob"),
+			false,
+			[
+				BaseScript.createInputInfo(BaseScript.InputType.string, "File name"),
+				BaseScript.createInputInfo(BaseScript.InputType.string, "Data to save")
+			]
+		),
+		
+		BaseScript.createButtonInfo(
+			"Save File as Byte Array",
+			false,
+			Callable(self, "WriteByteBlob"),
+			false,
+			[
+				BaseScript.createInputInfo(BaseScript.InputType.string, "File name"),
+				BaseScript.createInputInfo(BaseScript.InputType.string, "Data to save")
+			]
+		)
 	]
 
 func InitializeGameSave() -> void:
@@ -16,7 +42,7 @@ func InitializeGameSave() -> void:
 func InitializeGameSaveCallback() -> void:
 	print("Finished initializing Game Save Provider")
 
-func ReadBlob(output:Label, fileName:LineEdit) -> void:
+func ReadBlob(output:LineEdit, fileName:LineEdit) -> void:
 	var blobs:Array = saveSystem.ReadBlobData("test", [fileName.text]);
 
 	if blobs.size() > 0:

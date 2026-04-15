@@ -2,6 +2,7 @@
 #include "gdk_helpers.h"
 #include "gdk_asyncblock.h"
 #include <classes/image.hpp>
+#include <xsapi-c/xbox_live_context_c.h>
 
 using namespace godot;
 
@@ -115,6 +116,8 @@ Ref<GDKUser> GDKUser::create(XUserHandle user) {
     if (user) {
         wrapper.instantiate();
         wrapper->_user = user;
+        HRESULT hr = XblContextCreateHandle(user, &wrapper->_xbl_context);
+        ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XblContextCreateHandle failed in GDKUser::create, Error: 0x%08ux", (uint64_t)hr));
     }
 	return wrapper;
 }
@@ -138,7 +141,7 @@ Ref<GDKAsyncBlock> GDKUser::add_user_async(BitField<GDKXUserAddOptions::Enum> op
     });
 
     HRESULT hr = XUserAddAsync(opts, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserAddAsync Error: 0x%08ux", (uint64_t)hr));
 	return asyncBlock;
 }
 
@@ -164,7 +167,7 @@ Ref<GDKAsyncBlock> GDKUser::add_user_by_id_with_ui_async(int64_t user_id) {
         wrapper->emit(return_data);
     });
     HRESULT hr = XUserAddByIdWithUiAsync(user_id, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserAddByIdWithUiAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserAddByIdWithUiAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
@@ -235,7 +238,7 @@ Ref<GDKAsyncBlock> GDKUser::sign_out() const {
         wrapper->emit(return_data); 
     });
     HRESULT hr = XUserSignOutAsync(_user, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserSignOutAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserSignOutAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
@@ -312,7 +315,7 @@ Ref<GDKAsyncBlock> GDKUser::get_gamer_picture_async(GDKXUserGamerPictureSize::En
     });
 
     HRESULT hr = XUserGetGamerPictureAsync(_user, psize, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetGamerPictureAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserGetGamerPictureAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
@@ -345,7 +348,7 @@ Ref<GDKAsyncBlock> GDKUser::resolve_privilege_with_ui_async(BitField<GDKXUserPri
     });
     XUserPrivilegeOptions opt = (XUserPrivilegeOptions)((int64_t) options);
     HRESULT hr = XUserResolvePrivilegeWithUiAsync(_user, opt, (XUserPrivilege)privilege, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolvePrivilegeWithUiAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserResolvePrivilegeWithUiAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
@@ -386,7 +389,7 @@ Ref<GDKAsyncBlock> GDKUser::get_token_and_signature_async(BitField<GDKXUserGetTo
         HRESULT hr = XUserGetTokenAndSignatureAsync(_user, opt, method.utf8(), url.utf8(), headers.size(),
             header_arr.ptr(), body.size(), body.ptr(), asyncBlock->get_block());
         
-        ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserGetTokenAndSignatureAsync Error: 0x%08ux", (uint64_t)hr));
+        ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserGetTokenAndSignatureAsync Error: 0x%08ux", (uint64_t)hr));
         return asyncBlock;
 }
 
@@ -402,7 +405,7 @@ Ref<GDKAsyncBlock> GDKUser::resolve_issue_with_ui_async(const String &url) const
     });
 
     HRESULT hr = XUserResolveIssueWithUiAsync(_user, url.utf8().get_data(), asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserResolveIssueWithUiAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserResolveIssueWithUiAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
 
@@ -435,7 +438,7 @@ Ref<GDKAsyncBlock> GDKUser::find_controller_for_user_with_ui_async() const {
         wrapper->emit(return_data);
     });
     HRESULT hr = XUserFindControllerForUserWithUiAsync(_user, asyncBlock->get_block());
-    ERR_FAIL_COND_V_MSG(FAILED(hr), asyncBlock, vformat("XUserFindControllerForUserWithUiAsync Error: 0x%08ux", (uint64_t)hr));
+    ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XUserFindControllerForUserWithUiAsync Error: 0x%08ux", (uint64_t)hr));
 	return asyncBlock;
 }
 

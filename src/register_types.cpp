@@ -31,7 +31,6 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(GodotGDK);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);
@@ -41,6 +40,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKGameSaveBlobInfo);
 	GDREGISTER_CLASS(GDKXUserAddOptions);
 	GDREGISTER_CLASS(GDKXUserState);
+	GDREGISTER_CLASS(GDKXUserChangeEvent);
 	GDREGISTER_CLASS(GDKXUserGamertagComponent);
 	GDREGISTER_CLASS(GDKXUserGamerPictureSize);
 	GDREGISTER_CLASS(GDKXUserAgeGroup);
@@ -52,6 +52,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKXUserGetTokenAndSignatureData);
 	GDREGISTER_CLASS(GDKXUserSignOutDeferralHandle);
 	GDREGISTER_CLASS(GDKUser);
+	GDREGISTER_CLASS(GodotGDK);
 
 	gdk = GodotGDK::get_singleton();
 	Engine::get_singleton()->register_singleton("GDK", gdk);

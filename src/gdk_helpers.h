@@ -15,5 +15,6 @@ protected:
 
 public:
     static XTaskQueueHandle get_async_queue();
+    static String get_scid();    
 };
 }

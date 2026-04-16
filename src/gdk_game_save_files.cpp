@@ -13,7 +13,7 @@ Ref<GDKAsyncBlock> GDKGameSaveFiles::get_folder_with_ui_async(Ref<GDKUser> user)
     XTaskQueueHandle queue = GDKHelpers::get_async_queue();
     Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(queue);
     asyncBlock->set_callback([](XAsyncBlock* async) {
-        GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async);
+        GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
 
         size_t folderSize = 0;
         XAsyncGetResultSize(async, &folderSize);

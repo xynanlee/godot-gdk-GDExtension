@@ -9,31 +9,50 @@ void GDKProfile::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_user_profiles_async", "caller_user", "xbox_user_ids"), &GDKProfile::get_user_profiles_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_user_profiles_for_social_group_async", "caller_user", "social_group"), &GDKProfile::get_user_profiles_for_social_group_async);
 
+    ClassDB::bind_method(D_METHOD("get_xbox_user_id"), &GDKProfile::get_xbox_user_id);
     ADD_PROPERTY(PropertyInfo(Variant::INT, "xbox_user_id"), "", "get_xbox_user_id");
+
+    ClassDB::bind_method(D_METHOD("get_app_display_name"), &GDKProfile::get_app_display_name);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "app_display_name"), "", "get_app_display_name");
+
+    ClassDB::bind_method(D_METHOD("get_app_display_picture_resize_uri"), &GDKProfile::get_app_display_picture_resize_uri);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "app_display_picture_resize_uri"), "", "get_app_display_picture_resize_uri");
+
+    ClassDB::bind_method(D_METHOD("get_game_display_name"), &GDKProfile::get_game_display_name);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "game_display_name"), "", "get_game_display_name");
+
+    ClassDB::bind_method(D_METHOD("get_game_display_picture_resize_uri"), &GDKProfile::get_game_display_picture_resize_uri);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "game_display_picture_resize_uri"), "", "get_game_display_picture_resize_uri");
+
+    ClassDB::bind_method(D_METHOD("get_gamerscore"), &GDKProfile::get_gamerscore);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "gamerscore"), "", "get_gamerscore");
+
+    ClassDB::bind_method(D_METHOD("get_gamertag"), &GDKProfile::get_gamertag);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "gamertag"), "", "get_gamertag");
+
+    ClassDB::bind_method(D_METHOD("get_modern_gamertag"), &GDKProfile::get_modern_gamertag);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "modern_gamertag"), "", "get_modern_gamertag");
+
+    ClassDB::bind_method(D_METHOD("get_modern_gamertag_suffix"), &GDKProfile::get_modern_gamertag_suffix);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "modern_gamertag_suffix"), "", "get_modern_gamertag_suffix");
+
+    ClassDB::bind_method(D_METHOD("get_unique_modern_gamertag"), &GDKProfile::get_unique_modern_gamertag);
     ADD_PROPERTY(PropertyInfo(Variant::STRING, "unique_modern_gamertag"), "", "get_unique_modern_gamertag");
 }
 
 Ref<GDKProfile> GDKProfile::create(XblUserProfile *profile) {
     Ref<GDKProfile> wrapper;
     wrapper.instantiate();
-    wrapper->_xbox_user_id = profile->xboxUserId;
-    wrapper->_app_display_name = profile->appDisplayName;
-    wrapper->_app_display_picture_resize_uri = profile->appDisplayPictureResizeUri;
-    wrapper->_game_display_name = profile->gameDisplayName;
-    wrapper->_game_display_picture_resize_uri = profile->gameDisplayPictureResizeUri;
-    wrapper->_gamerscore = profile->gamerscore;
-    wrapper->_gamertag = profile->gamertag;
-    wrapper->_modern_gamertag = profile->modernGamertag;
-    wrapper->_modern_gamertag_suffix = profile->modernGamertagSuffix;
-    wrapper->_unique_modern_gamertag = profile->uniqueModernGamertag;
+    wrapper->xbox_user_id = profile->xboxUserId;
+    wrapper->app_display_name = profile->appDisplayName;
+    wrapper->app_display_picture_resize_uri = profile->appDisplayPictureResizeUri;
+    wrapper->game_display_name = profile->gameDisplayName;
+    wrapper->game_display_picture_resize_uri = profile->gameDisplayPictureResizeUri;
+    wrapper->gamerscore = profile->gamerscore;
+    wrapper->gamertag = profile->gamertag;
+    wrapper->modern_gamertag = profile->modernGamertag;
+    wrapper->modern_gamertag_suffix = profile->modernGamertagSuffix;
+    wrapper->unique_modern_gamertag = profile->uniqueModernGamertag;
 	return wrapper;
 }
 

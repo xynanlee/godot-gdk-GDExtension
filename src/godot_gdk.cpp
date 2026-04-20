@@ -99,15 +99,21 @@ void UserChangeEventCallback(void* context, XUserLocalId userLocalId, XUserChang
 
 void DeviceAssociationChangeCallback(void* context, const XUserDeviceAssociationChange* change) {
 	PackedByteArray device_id;
+	device_id.resize(sizeof(APP_LOCAL_DEVICE_ID));
 	memcpy(device_id.ptrw(), &change->deviceId, sizeof(APP_LOCAL_DEVICE_ID));
 
+	HRESULT hr = S_OK;
 	XUserHandle oldUserHandle;
-	HRESULT hr = XUserFindUserByLocalId(change->oldUser, &oldUserHandle);
-	ERR_FAIL_COND_MSG(FAILED(hr), vformat("DeviceAssociationChange FindUserByLocalId(OldUser) Error: 0x%08ux", (uint64_t)hr));
+	if (change->oldUser != 0) {
+		hr = XUserFindUserByLocalId(change->oldUser, &oldUserHandle);
+	}
+	ERR_FAIL_COND_MSG(FAILED(hr) && change->oldUser != 0, vformat("DeviceAssociationChange FindUserByLocalId(OldUser) Error: 0x%08ux", (uint64_t)hr));
 
 	XUserHandle newUserHandle;
-	hr = XUserFindUserByLocalId(change->newUser, &newUserHandle);
-	ERR_FAIL_COND_MSG(FAILED(hr), vformat("DeviceAssociationChange FindUserByLocalId(NewUser) Error: 0x%08ux", (uint64_t)hr));
+	if (change->newUser != 0) {
+		hr = XUserFindUserByLocalId(change->newUser, &newUserHandle);
+	}
+	ERR_FAIL_COND_MSG(FAILED(hr) && change->newUser != 0, vformat("DeviceAssociationChange FindUserByLocalId(NewUser) Error: 0x%08ux", (uint64_t)hr));
 
 	GodotGDK* self = static_cast<GodotGDK*>(context);
 	self->call_deferred("emit_signal", "device_association_changed", device_id, GDKUser::create(oldUserHandle), GDKUser::create(newUserHandle));

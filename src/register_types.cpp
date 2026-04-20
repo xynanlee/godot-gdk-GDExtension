@@ -37,6 +37,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);
 	GDREGISTER_CLASS(GDKAchievementsResultHandle);
+	GDREGISTER_RUNTIME_CLASS(GDKPromise);
 	GDREGISTER_CLASS(GDKGameSaveFiles);
 	GDREGISTER_CLASS(GDKGameSave);
 	GDREGISTER_CLASS(GDKGameSaveBlob);

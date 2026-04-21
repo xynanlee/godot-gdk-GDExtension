@@ -103,20 +103,24 @@ void DeviceAssociationChangeCallback(void* context, const XUserDeviceAssociation
 	memcpy(device_id.ptrw(), &change->deviceId, sizeof(APP_LOCAL_DEVICE_ID));
 
 	HRESULT hr = S_OK;
-	XUserHandle oldUserHandle;
-	if (change->oldUser != 0) {
+	Ref<GDKUser> oldUser = nullptr;
+	if (change->oldUser.value != 0) {
+		XUserHandle oldUserHandle;
 		hr = XUserFindUserByLocalId(change->oldUser, &oldUserHandle);
+		ERR_FAIL_COND_MSG(FAILED(hr) && change->oldUser.value != 0, vformat("DeviceAssociationChange FindUserByLocalId(OldUser) Error: 0x%08ux", (uint64_t)hr));
+		oldUser = GDKUser::create(oldUserHandle);
 	}
-	ERR_FAIL_COND_MSG(FAILED(hr) && change->oldUser != 0, vformat("DeviceAssociationChange FindUserByLocalId(OldUser) Error: 0x%08ux", (uint64_t)hr));
 
-	XUserHandle newUserHandle;
-	if (change->newUser != 0) {
+	Ref<GDKUser> newUser = nullptr;
+	if (change->newUser.value != 0) {
+		XUserHandle newUserHandle;
 		hr = XUserFindUserByLocalId(change->newUser, &newUserHandle);
+		ERR_FAIL_COND_MSG(FAILED(hr) && change->newUser.value != 0, vformat("DeviceAssociationChange FindUserByLocalId(NewUser) Error: 0x%08ux", (uint64_t)hr));
+		newUser = GDKUser::create(newUserHandle);
 	}
-	ERR_FAIL_COND_MSG(FAILED(hr) && change->newUser != 0, vformat("DeviceAssociationChange FindUserByLocalId(NewUser) Error: 0x%08ux", (uint64_t)hr));
 
 	GodotGDK* self = static_cast<GodotGDK*>(context);
-	self->call_deferred("emit_signal", "device_association_changed", device_id, GDKUser::create(oldUserHandle), GDKUser::create(newUserHandle));
+	self->call_deferred("emit_signal", "device_association_changed", device_id, oldUser, newUser);
 }
 
 void DefaultAudioEndpointUtf16ChangeCallback(void* context, XUserLocalId userLocalId, XUserDefaultAudioEndpointKind endpointKind, const wchar_t* endpointIdUtf16)

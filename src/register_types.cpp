@@ -10,6 +10,7 @@
 #include "gdk_asyncblock.h"
 #include "gdk_achievement.h"
 #include "gdk_achievements.h"
+#include "gdk_game_save_files.h"
 #include "gdk_game_save.h"
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
@@ -39,6 +40,8 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKGameSaveProvider);
 	GDREGISTER_CLASS(GDKGameSaveContainer);
 	GDREGISTER_CLASS(GDKGameSaveUpdate);
+	GDREGISTER_RUNTIME_CLASS(GDKPromise);
+	GDREGISTER_CLASS(GDKGameSaveFiles);
 	GDREGISTER_CLASS(GDKGameSave);
 	GDREGISTER_CLASS(GDKGameSaveBlob);
 	GDREGISTER_CLASS(GDKGameSaveBlobInfo);

@@ -15,6 +15,7 @@
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
+#include "gdk_gameui.h"
 
 using namespace godot;
 
@@ -32,6 +33,14 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKXGameUINotificationPositionHint);
+	GDREGISTER_CLASS(GDKXGameUITextEntryInputScope);
+	GDREGISTER_CLASS(GDKXGameUITextEntryPositionHint);
+	GDREGISTER_CLASS(GDKXGameUITextEntryVisibilityFlags);
+	GDREGISTER_CLASS(GDKXGameUITextEntryOptions);
+	GDREGISTER_CLASS(GDKXGameUITextEntryChangeTypeFlags);
+	GDREGISTER_CLASS(GDKGameUITextEntryHandle);
+	GDREGISTER_CLASS(GDKGameUI);
 	GDREGISTER_CLASS(GodotGDK);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);

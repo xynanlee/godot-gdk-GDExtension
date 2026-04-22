@@ -28,6 +28,15 @@ using namespace godot;
 
 GodotGDK* GodotGDK::_instance = nullptr;
 
+void GDKXUserChangeEvent::_bind_methods() {
+	BIND_ENUM_CONSTANT(SignedInAgain);
+	BIND_ENUM_CONSTANT(SigningOut);
+	BIND_ENUM_CONSTANT(SignedOut);
+	BIND_ENUM_CONSTANT(Gamertag);
+	BIND_ENUM_CONSTANT(GamerPicture);
+	BIND_ENUM_CONSTANT(Privileges);
+}
+
 void GodotGDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("InitializeGDK", "callback", "SCID"), &GodotGDK::InitializeGDK);
 
@@ -36,6 +45,17 @@ void GodotGDK::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("launch_restart_on_crash", "args"), &GodotGDK::launch_restart_on_crash);
 
 	ADD_SIGNAL(MethodInfo("game_invite_received", PropertyInfo(Variant::STRING, "invite_uri")));
+	ADD_SIGNAL(MethodInfo("user_changed", 
+				PropertyInfo(Variant::OBJECT, "user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKUser"),
+				PropertyInfo(Variant::INT, "change_event", PROPERTY_HINT_ENUM, "SignedInAgain,SigningOut,SignedOut,Gamertag,GamerPicture,Privileges", PROPERTY_USAGE_DEFAULT, "GDKXUserChangeEvent::Enum")));
+	ADD_SIGNAL(MethodInfo("device_association_changed", 
+				PropertyInfo(Variant::PACKED_BYTE_ARRAY, "device_id"),
+				PropertyInfo(Variant::OBJECT, "old_user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKUser"),
+				PropertyInfo(Variant::OBJECT, "new_user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKUser")));
+	ADD_SIGNAL(MethodInfo("default_audio_endpoint_utf16_changed",
+				PropertyInfo(Variant::OBJECT, "user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKUser"),
+				PropertyInfo(Variant::INT, "endpoint_kind", PROPERTY_HINT_ENUM, "CommunicationRender,CommunicationCapture", PROPERTY_USAGE_DEFAULT, "GDKXUserDefaultAudioEndpointKind::Enum"),
+				PropertyInfo(Variant::STRING, "endpoint_id")));
 }
 
 void GodotGDK::_notification(int p_what) {
@@ -45,6 +65,10 @@ void GodotGDK::_notification(int p_what) {
 				XGameInviteUnregisterForEvent(_invite_token, false);
 				_invite_registered = false;
 			}
+
+			XUserUnregisterForChangeEvent(_user_change_token, false);
+			XUserUnregisterForDeviceAssociationChanged(_device_association_change_token, false);
+			XUserUnregisterForDefaultAudioEndpointUtf16Changed(_default_audio_endpoint_change_token, false);
 			XTaskQueueCloseHandle(queue);
 			XGameRuntimeUninitialize();
 		}
@@ -58,6 +82,58 @@ GodotGDK *GodotGDK::get_singleton() {
 
 	_instance = memnew(GodotGDK);
 	return _instance;
+}
+
+void UserChangeEventCallback(void* context, XUserLocalId userLocalId, XUserChangeEvent event) {
+	XUserHandle userHandle;
+
+	HRESULT hr = XUserFindUserByLocalId(userLocalId, &userHandle);
+	ERR_FAIL_COND_MSG(FAILED(hr), vformat("UserChangeEvent Error: 0x%08ux", (uint64_t)hr));
+
+	Ref<GDKUser> user = GDKUser::create(userHandle);
+	GDKXUserChangeEvent::Enum event_enum = static_cast<GDKXUserChangeEvent::Enum>(event);
+
+	GodotGDK* self = static_cast<GodotGDK*>(context);
+	self->call_deferred("emit_signal", "user_changed", user, event_enum);
+}
+
+void DeviceAssociationChangeCallback(void* context, const XUserDeviceAssociationChange* change) {
+	PackedByteArray device_id;
+	device_id.resize(sizeof(APP_LOCAL_DEVICE_ID));
+	memcpy(device_id.ptrw(), &change->deviceId, sizeof(APP_LOCAL_DEVICE_ID));
+
+	HRESULT hr = S_OK;
+	Ref<GDKUser> oldUser = nullptr;
+	if (change->oldUser.value != 0) {
+		XUserHandle oldUserHandle;
+		hr = XUserFindUserByLocalId(change->oldUser, &oldUserHandle);
+		ERR_FAIL_COND_MSG(FAILED(hr) && change->oldUser.value != 0, vformat("DeviceAssociationChange FindUserByLocalId(OldUser) Error: 0x%08ux", (uint64_t)hr));
+		oldUser = GDKUser::create(oldUserHandle);
+	}
+
+	Ref<GDKUser> newUser = nullptr;
+	if (change->newUser.value != 0) {
+		XUserHandle newUserHandle;
+		hr = XUserFindUserByLocalId(change->newUser, &newUserHandle);
+		ERR_FAIL_COND_MSG(FAILED(hr) && change->newUser.value != 0, vformat("DeviceAssociationChange FindUserByLocalId(NewUser) Error: 0x%08ux", (uint64_t)hr));
+		newUser = GDKUser::create(newUserHandle);
+	}
+
+	GodotGDK* self = static_cast<GodotGDK*>(context);
+	self->call_deferred("emit_signal", "device_association_changed", device_id, oldUser, newUser);
+}
+
+void DefaultAudioEndpointUtf16ChangeCallback(void* context, XUserLocalId userLocalId, XUserDefaultAudioEndpointKind endpointKind, const wchar_t* endpointIdUtf16)
+{
+	XUserHandle userHandle;
+	HRESULT hr = XUserFindUserByLocalId(userLocalId, &userHandle);
+	ERR_FAIL_COND_MSG(FAILED(hr), vformat("DefaultAudioEndpointUtf16ChangeCallback FindUserByLocalId Error: 0x%08ux", (uint64_t)hr));
+
+	GDKXUserDefaultAudioEndpointKind::Enum endpoint_enum = static_cast<GDKXUserDefaultAudioEndpointKind::Enum>(endpointKind);
+	String endpoint_id = String(endpointIdUtf16);
+
+	GodotGDK* self = static_cast<GodotGDK*>(context);
+	self->call_deferred("emit_signal", "default_audio_endpoint_utf16_changed", GDKUser::create(userHandle), endpoint_enum, endpoint_id);
 }
 
 int GodotGDK::InitializeGDK(Callable cb, String scid) {
@@ -85,6 +161,15 @@ int GodotGDK::InitializeGDK(Callable cb, String scid) {
 	if (CheckResult(hr, "Game invite event registered", "Failed to register game invite event")) {
 		_invite_registered = true;
 	}
+
+	hr = XUserRegisterForChangeEvent(queue, this, &UserChangeEventCallback, &_user_change_token);
+	CheckResult(hr, "User change event registered", "Failed to register user change event");
+
+	hr = XUserRegisterForDeviceAssociationChanged(queue, this, &DeviceAssociationChangeCallback, &_device_association_change_token);
+	CheckResult(hr, "Device association change event registered", "Failed to register device association change event");
+
+	hr = XUserRegisterForDefaultAudioEndpointUtf16Changed(queue, this, &DefaultAudioEndpointUtf16ChangeCallback, &_default_audio_endpoint_change_token);
+	CheckResult(hr, "Default audio endpoint change event registered", "Failed to register default audio endpoint change event");
 
 	hr = Identity_TrySignInDefaultUserSilently(queue, cb);
 	CheckResult(hr, "Login successfully started", "Failed to start login");
@@ -217,3 +302,4 @@ int64_t GodotGDK::launch_restart_on_crash(const String &args) {
 	ERR_FAIL_COND_V_MSG(FAILED(hr), (int64_t)hr, vformat("XLaunchRestartOnCrash Error: 0x%08ux", (uint64_t)hr));
 	return (int64_t)hr;
 }
+

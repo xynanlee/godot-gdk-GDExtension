@@ -13,8 +13,26 @@
 
 #include <string>
 
-namespace godot { 
+namespace godot {
+	class GDKXUserChangeEvent: public Object {
+		GDCLASS(GDKXUserChangeEvent, Object)
+
+	protected:
+		static void _bind_methods();
+	
+	public:
+		enum Enum: uint32_t {
+			SignedInAgain = XUserChangeEvent::SignedInAgain,
+			SigningOut = XUserChangeEvent::SigningOut,
+			SignedOut = XUserChangeEvent::SignedOut,
+			Gamertag = XUserChangeEvent::Gamertag,
+			GamerPicture = XUserChangeEvent::GamerPicture,
+			Privileges = XUserChangeEvent::Privileges
+		};
+	};
+
 	class GDKUser;
+	
 
 	class GodotGDK : public RefCounted {
 		GDCLASS(GodotGDK, RefCounted)
@@ -24,6 +42,10 @@ namespace godot {
 		bool _initialized = false;
 		XTaskQueueHandle _async_queue = nullptr;
 		XTaskQueueRegistrationToken _invite_token = {};
+		XTaskQueueRegistrationToken _user_change_token = {};
+		XTaskQueueRegistrationToken _device_association_change_token = {};
+		XTaskQueueRegistrationToken _default_audio_endpoint_change_token = {};
+
 		bool _invite_registered = false;
 
 		static HRESULT Identity_TrySignInDefaultUserSilently(XTaskQueueHandle asyncQueue, Callable cb);
@@ -53,5 +75,9 @@ namespace godot {
 		int64_t get_xbox_title_id();
 		void launch_new_game(const String &exe_path, const String &args, Ref<GDKUser> default_user);
 		int64_t launch_restart_on_crash(const String &args);
+
+
 	};
 }
+
+VARIANT_ENUM_CAST(GDKXUserChangeEvent::Enum);

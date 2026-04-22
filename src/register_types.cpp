@@ -10,6 +10,7 @@
 #include "gdk_asyncblock.h"
 #include "gdk_achievement.h"
 #include "gdk_achievements.h"
+#include "gdk_game_save_files.h"
 #include "gdk_game_save.h"
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
@@ -33,16 +34,18 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 		return;
 	}
 	GDREGISTER_CLASS(GDKProfile);
-	GDREGISTER_CLASS(GodotGDK);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);
 	GDREGISTER_CLASS(GDKAchievementsResultHandle);
+	GDREGISTER_RUNTIME_CLASS(GDKPromise);
+	GDREGISTER_CLASS(GDKGameSaveFiles);
 	GDREGISTER_CLASS(GDKGameSave);
 	GDREGISTER_CLASS(GDKGameSaveBlob);
 	GDREGISTER_CLASS(GDKGameSaveBlobInfo);
 	GDREGISTER_CLASS(GDKXUserAddOptions);
 	GDREGISTER_CLASS(GDKXUserState);
+	GDREGISTER_CLASS(GDKXUserChangeEvent);
 	GDREGISTER_CLASS(GDKXUserGamertagComponent);
 	GDREGISTER_CLASS(GDKXUserGamerPictureSize);
 	GDREGISTER_CLASS(GDKXUserAgeGroup);
@@ -54,6 +57,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKXUserGetTokenAndSignatureData);
 	GDREGISTER_CLASS(GDKXUserSignOutDeferralHandle);
 	GDREGISTER_CLASS(GDKUser);
+	GDREGISTER_CLASS(GodotGDK);
 
 	gdk = GodotGDK::get_singleton();
 	Engine::get_singleton()->register_singleton("GDK", gdk);

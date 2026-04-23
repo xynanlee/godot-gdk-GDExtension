@@ -15,6 +15,7 @@
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
+#include "gdk_package.h"
 
 using namespace godot;
 
@@ -32,6 +33,13 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKXPackageMount);
+	GDREGISTER_CLASS(GDKXPackageEnumerationScope);
+	GDREGISTER_CLASS(GDKXPackageKind);
+	GDREGISTER_CLASS(GDKXPackageChunkAvailability);
+	GDREGISTER_CLASS(GDKXPackageChunkSelector);
+	GDREGISTER_CLASS(GDKXPackageInstallationMonitor);
+	GDREGISTER_CLASS(GDKPackage);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);

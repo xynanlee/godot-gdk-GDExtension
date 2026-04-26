@@ -15,6 +15,7 @@
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
+#include "gdk_store.h"
 
 using namespace godot;
 
@@ -32,6 +33,19 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKXStoreProductKind);
+	GDREGISTER_CLASS(GDKXStorePrice);
+	GDREGISTER_CLASS(GDKXStoreCollectionData);
+	GDREGISTER_CLASS(GDKXStoreSubscriptionInfo);
+	GDREGISTER_CLASS(GDKXStoreImage);
+	GDREGISTER_CLASS(GDKXStoreVideo);
+	GDREGISTER_CLASS(GDKXStoreAvailability);
+	GDREGISTER_CLASS(GDKXStoreSku);
+	GDREGISTER_CLASS(GDKXStoreProduct);
+	GDREGISTER_CLASS(GDKXStoreProductQueryHandle);
+	GDREGISTER_CLASS(GDKXStoreCanLicenseStatus);
+	GDREGISTER_CLASS(GDKXStoreLicenseHandle);
+	GDREGISTER_CLASS(GDKStore);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);

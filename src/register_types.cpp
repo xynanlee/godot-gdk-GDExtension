@@ -16,6 +16,7 @@
 #include "gdk_user.h"
 #include "gdk_error.h"
 #include "gdk_stringverify.h"
+#include "gdk_leaderboard.h"
 
 using namespace godot;
 
@@ -33,6 +34,11 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKXblLeaderboardRow);
+	GDREGISTER_CLASS(GDKXblLeaderboardQuery);
+	GDREGISTER_CLASS(GDKXblLeaderboardColumn);
+	GDREGISTER_CLASS(GDKXblLeaderboardResult);
+	GDREGISTER_CLASS(GDKXblLeaderboardQuery);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);
 	GDREGISTER_CLASS(GDKAsyncBlock);

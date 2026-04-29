@@ -4,6 +4,37 @@
 #include "gdk_game_save_update.h"
 
 using namespace godot;
+
+void GDKGameSaveContainerInfo::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_name"), &GDKGameSaveContainerInfo::get_name);
+	ClassDB::bind_method(D_METHOD("get_display_name"), &GDKGameSaveContainerInfo::get_display_name);
+	ClassDB::bind_method(D_METHOD("get_blob_count"), &GDKGameSaveContainerInfo::get_blob_count);
+	ClassDB::bind_method(D_METHOD("get_total_size"), &GDKGameSaveContainerInfo::get_total_size);
+	ClassDB::bind_method(D_METHOD("get_last_modified_time"), &GDKGameSaveContainerInfo::get_last_modified_time);
+	ClassDB::bind_method(D_METHOD("get_needs_sync"), &GDKGameSaveContainerInfo::get_needs_sync);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "name"), "", "get_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "display_name"), "", "get_display_name");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "blob_count"), "", "get_blob_count");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "total_size"), "", "get_total_size");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "last_modified_time"), "", "get_last_modified_time");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "needs_sync"), "", "get_needs_sync");
+}
+
+Ref<GDKGameSaveContainerInfo> GDKGameSaveContainerInfo::create(const XGameSaveContainerInfo *info) {
+	Ref<GDKGameSaveContainerInfo> wrapper;
+	if (info != nullptr) {
+		wrapper.instantiate();
+		wrapper->_name = info->name;
+		wrapper->_display_name = info->displayName;
+		wrapper->_blob_count = info->blobCount;
+		wrapper->_total_size = info->totalSize;
+		wrapper->_last_modified_time = info->lastModifiedTime;
+		wrapper->_needs_sync = info->needsSync;
+	}
+	return wrapper;
+}
+
 void GDKGameSaveContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_update"), &GDKGameSaveContainer::create_update);
 	ClassDB::bind_method(D_METHOD("enumerate_blob_info"), &GDKGameSaveContainer::enumerate_blob_info);
@@ -59,7 +90,7 @@ TypedDictionary<String, int> GDKGameSaveContainer::enumerate_blob_info() const {
 	return data;
 }
 
-TypedDictionary<String, int> godot::GDKGameSaveContainer::enumerate_blob_info_by_name(const String& prefix) const {
+TypedDictionary<String, int> GDKGameSaveContainer::enumerate_blob_info_by_name(const String& prefix) const {
 	TypedDictionary<String, int> data;
 
 	const char* prefixString = prefix.utf8().get_data();
@@ -101,7 +132,6 @@ Dictionary GDKGameSaveContainer::read_blob_data(PackedStringArray blobNames, int
 	
 	TypedArray<GDKGameSaveBlob> blobArray;
 	if (SUCCEEDED(hr)) {
-		blobArray.resize(blobCount);
 		for (uint32_t i = 0; i < blobCount; i++) {
 			blobArray.push_back(memnew(GDKGameSaveBlob(&saveBlobs[i])));
 		}
@@ -169,7 +199,6 @@ Ref<GDKAsyncBlock> GDKGameSaveContainer::read_blob_data_async(PackedStringArray 
 		}
 		
 		if (SUCCEEDED(hr)) {
-			blobArray.resize(blobCount);
 			for (uint32_t i = 0; i < blobCount; i++) {
 				blobArray.push_back(memnew(GDKGameSaveBlob(&saveBlobs[i])));
 			}

@@ -59,76 +59,53 @@ Ref<GDKAsyncBlock> GDKGameSaveProvider::delete_container_async(const String &con
 	return asyncBlock;
 }
 
-Dictionary GDKGameSaveProvider::enumerate_container_info() const {
-	Dictionary data;
-	HRESULT hr = XGameSaveEnumerateContainerInfo(_save_provider_handle, &data,
+TypedArray<Ref<GDKGameSaveContainerInfo>> GDKGameSaveProvider::enumerate_container_info() const {
+    TypedArray<Ref<GDKGameSaveContainerInfo>> containers;
+	HRESULT hr = XGameSaveEnumerateContainerInfo(_save_provider_handle, &containers,
 		[](const XGameSaveContainerInfo* info, void* context) -> bool {
-			Dictionary containerData;
-			containerData["name"] = String(info->name);
-			containerData["display_name"] = String(info->displayName);
-			containerData["blob_count"] = info->blobCount;
-			containerData["total_size"] = String::num_uint64(info->totalSize);
-			containerData["last_modified_time"] = info->lastModifiedTime;
-			containerData["needs_sync"] = info->needsSync;
-			
-			Dictionary* data = reinterpret_cast<Dictionary*>(context);
-			data->set(String(info->name), containerData);
+			TypedArray<Ref<GDKGameSaveContainerInfo>>* data = reinterpret_cast<TypedArray<Ref<GDKGameSaveContainerInfo>>*>(context);
+			data->push_back(GDKGameSaveContainerInfo::create(info));
 			return true;
 		});
 
 	if (FAILED(hr)) {
 		ERR_PRINT(vformat("XGameSaveEnumerateContainerInfo Error: 0x%08ux", (uint64_t)hr));
-		return Dictionary();
+		return TypedArray<Ref<GDKGameSaveContainerInfo>>();
 	}
 
-	return data;
+	return containers;
 }
 
-Dictionary GDKGameSaveProvider::enumerate_container_info_by_name(const String &prefix) const {
-	Dictionary data;
-	HRESULT hr = XGameSaveEnumerateContainerInfoByName(_save_provider_handle, prefix.utf8().get_data(), &data,
+TypedArray<Ref<GDKGameSaveContainerInfo>> GDKGameSaveProvider::enumerate_container_info_by_name(const String &prefix) const {
+	TypedArray<Ref<GDKGameSaveContainerInfo>> containers;
+	HRESULT hr = XGameSaveEnumerateContainerInfoByName(_save_provider_handle, prefix.utf8().get_data(), &containers,
 		[](const XGameSaveContainerInfo* info, void* context) -> bool {
-			Dictionary containerData;
-			containerData["name"] = String(info->name);
-			containerData["display_name"] = String(info->displayName);
-			containerData["blob_count"] = info->blobCount;
-			containerData["total_size"] = String::num_uint64(info->totalSize);
-			containerData["last_modified_time"] = info->lastModifiedTime;
-			containerData["needs_sync"] = info->needsSync;
-
-			Dictionary* data = reinterpret_cast<Dictionary*>(context);
-			data->set(String(info->name), containerData);
+			TypedArray<Ref<GDKGameSaveContainerInfo>>* data = reinterpret_cast<TypedArray<Ref<GDKGameSaveContainerInfo>>*>(context);
+            data->push_back(GDKGameSaveContainerInfo::create(info));
 			return true;
 		});
 
 	if (FAILED(hr)) {
 		ERR_PRINT(vformat("XGameSaveEnumerateContainerInfoByName Error: 0x%08ux", (uint64_t)hr));
-		return Dictionary();
+		return TypedArray<Ref<GDKGameSaveContainerInfo>>();
 	}
 
-	return data;
+	return containers;
 }
 
-Dictionary GDKGameSaveProvider::get_container_info(const String& containerName) const {
-	Dictionary data;
+Ref<GDKGameSaveContainerInfo> GDKGameSaveProvider::get_container_info(const String& containerName) const {
+	Ref<GDKGameSaveContainerInfo> data;
 	HRESULT hr = XGameSaveGetContainerInfo(_save_provider_handle, containerName.utf8().get_data(), &data,
 		[](const XGameSaveContainerInfo* info, void* context) -> bool {
-			Dictionary containerData;
-			containerData["name"] = String(info->name);
-			containerData["display_name"] = String(info->displayName);
-			containerData["blob_count"] = info->blobCount;
-			containerData["total_size"] = String::num_uint64(info->totalSize);
-			containerData["last_modified_time"] = info->lastModifiedTime;
-			containerData["needs_sync"] = info->needsSync;
 
-			Dictionary* data = reinterpret_cast<Dictionary*>(context);
-			*data = containerData;
+			Ref<GDKGameSaveContainerInfo>* data = reinterpret_cast<Ref<GDKGameSaveContainerInfo>*>(context);
+			*data = GDKGameSaveContainerInfo::create(info);
 			return true;
 		});
 
 	if (FAILED(hr)) {
 		ERR_PRINT(vformat("XGameSaveGetContainerInfo Error: 0x%08ux", (uint64_t)hr));
-		return Dictionary();
+		return nullptr;
 	}
 
 	return data;

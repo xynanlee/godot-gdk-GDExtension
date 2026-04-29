@@ -1,5 +1,6 @@
 #include "gdk_game_save_container.h"
 #include "gdk_game_save_blob.h"
+#include "gdk_game_save_blob_info.h"
 #include "gdk_helpers.h"
 #include "gdk_game_save_update.h"
 
@@ -71,40 +72,38 @@ Ref<GDKGameSaveUpdate> GDKGameSaveContainer::create_update() const {
 	return GDKGameSaveUpdate::create(updateHandle);
 }
 
-TypedDictionary<String, int> GDKGameSaveContainer::enumerate_blob_info() const {
-	TypedDictionary<String, int> data;
+TypedArray<Ref<GDKGameSaveBlobInfo>> GDKGameSaveContainer::enumerate_blob_info() const {
+	TypedArray<Ref<GDKGameSaveBlobInfo>> data;
 
 	HRESULT hr = XGameSaveEnumerateBlobInfo(_container_handle, &data, 
 		[](const XGameSaveBlobInfo* info, void* context) -> bool {
-			TypedDictionary<String, int>* data = reinterpret_cast<TypedDictionary<String, int>*>(context);
-			String objectName = String(info->name);
-			data->set(objectName, info->size);
+			TypedArray<Ref<GDKGameSaveBlobInfo>>* data = reinterpret_cast<TypedArray<Ref<GDKGameSaveBlobInfo>>*>(context);
+			data->push_back(GDKGameSaveBlobInfo::create(info));
 			return true;
 		});
 	
 	if (FAILED(hr)) {
 		ERR_PRINT(vformat("XGameSaveEnumerateBlobInfo Error: 0x%08ux", (uint64_t)hr));
-		return TypedDictionary<String, int>();
+		return TypedArray<Ref<GDKGameSaveBlobInfo>>();
 	}
 
 	return data;
 }
 
-TypedDictionary<String, int> GDKGameSaveContainer::enumerate_blob_info_by_name(const String& prefix) const {
-	TypedDictionary<String, int> data;
+TypedArray<Ref<GDKGameSaveBlobInfo>> GDKGameSaveContainer::enumerate_blob_info_by_name(const String& prefix) const {
+	TypedArray<Ref<GDKGameSaveBlobInfo>> data;
 
 	const char* prefixString = prefix.utf8().get_data();
 	HRESULT hr = XGameSaveEnumerateBlobInfoByName(_container_handle, prefixString, &data,
 		[](const XGameSaveBlobInfo* info, void* context) -> bool {
-			TypedDictionary<String, int>* data = reinterpret_cast<TypedDictionary<String, int>*>(context);
-			String objectName = String(info->name);
-			data->set(objectName, info->size);
+			TypedArray<Ref<GDKGameSaveBlobInfo>>* data = reinterpret_cast<TypedArray<Ref<GDKGameSaveBlobInfo>>*>(context);
+			data->push_back(GDKGameSaveBlobInfo::create(info));
 			return true;
 		});
 
 	if (FAILED(hr)) {
 		ERR_PRINT(vformat("XGameSaveEnumerateBlobInfoByName Error: 0x%08ux", (uint64_t)hr));
-		return TypedDictionary<String, int>();
+		return TypedArray<Ref<GDKGameSaveBlobInfo>>();
 	}
 
 	return data;
@@ -133,7 +132,7 @@ Dictionary GDKGameSaveContainer::read_blob_data(PackedStringArray blobNames, int
 	TypedArray<GDKGameSaveBlob> blobArray;
 	if (SUCCEEDED(hr)) {
 		for (uint32_t i = 0; i < blobCount; i++) {
-			blobArray.push_back(memnew(GDKGameSaveBlob(&saveBlobs[i])));
+			blobArray.push_back(GDKGameSaveBlob::create(&saveBlobs[i]));
 		}
 	}
 
@@ -200,7 +199,7 @@ Ref<GDKAsyncBlock> GDKGameSaveContainer::read_blob_data_async(PackedStringArray 
 		
 		if (SUCCEEDED(hr)) {
 			for (uint32_t i = 0; i < blobCount; i++) {
-				blobArray.push_back(memnew(GDKGameSaveBlob(&saveBlobs[i])));
+				blobArray.push_back(GDKGameSaveBlob::create(&saveBlobs[i]));
 			}
 		}
 

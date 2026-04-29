@@ -1,18 +1,20 @@
 ﻿#include "gdk_game_save_blob.h"
+#include <variant/packed_byte_array.hpp>
 
-#include "godot_cpp/core/class_db.hpp"
-#include "godot_cpp/variant/packed_byte_array.hpp"
-#include "godot_cpp/core/print_string.hpp"
+using namespace godot;
 
-GDKGameSaveBlob::GDKGameSaveBlob(const XGameSaveBlob* src) {
-	if (!src) return;
+Ref<GDKGameSaveBlob> GDKGameSaveBlob::create(const XGameSaveBlob *blob) {
+	Ref<GDKGameSaveBlob> wrapper;
+	if (blob) {
+		wrapper.instantiate();
+		wrapper->_info = GDKGameSaveBlobInfo::create(&blob->info);
 
-	info.instantiate();
-	info->setInfo(&src->info);
-
-	data.resize(src->info.size);
-	memcpy(data.ptrw(), src->data, src->info.size);
-	godot::print_line(data);
+		PackedByteArray data;
+		data.resize(blob->info.size);
+		memcpy(data.ptrw(), blob->data, blob->info.size);
+		wrapper->_data = data;
+	}
+	return blob;
 }
 
 void GDKGameSaveBlob::_bind_methods() {

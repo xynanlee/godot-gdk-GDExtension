@@ -1,33 +1,25 @@
 ﻿#pragma once
 
-#include "gdk_game_save_blob_info.h"
-#include "godot_cpp/classes/ref.hpp"
-
+#include <classes/ref_counted.hpp>
 #include <Windows.h>
-#include <winapifamily.h>
-#include "godot_cpp/classes/ref_counted.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
-#include "godot_cpp/variant/variant.hpp"
 #include <XGameSave.h>
-#include <list>
+#include "gdk_game_save_blob_info.h"
 
-using namespace godot;
-
+namespace godot {
 class GDKGameSaveBlob : public RefCounted {
 	GDCLASS(GDKGameSaveBlob, RefCounted)
+
+private:
+	Ref<GDKGameSaveBlobInfo> _info;
+	PackedByteArray _data;
 
 protected:
 	static void _bind_methods();
 
 public:
-	GDKGameSaveBlob() = default;
-	explicit GDKGameSaveBlob(const XGameSaveBlob* src);
+	static Ref<GDKGameSaveBlob> create(const XGameSaveBlob* blob);
 
-	~GDKGameSaveBlob() override = default;
-
-	Ref<GDKGameSaveBlobInfo> info;
-	PackedByteArray data;
-
-	Ref<GDKGameSaveBlobInfo> get_info() const { return info; }
-	PackedByteArray get_data() const { return data; }
+	inline Ref<GDKGameSaveBlobInfo> get_info() const { return _info; }
+	inline PackedByteArray get_data() const { return _data; }
 };
+}

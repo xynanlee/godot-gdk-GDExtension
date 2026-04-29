@@ -7,7 +7,7 @@
 
 namespace godot {
 class GDKGameSaveUpdate;
-
+class GDKGameSaveBlobInfo;
 class GDKGameSaveContainerInfo: public RefCounted {
 	GDCLASS(GDKGameSaveContainerInfo, RefCounted);
 
@@ -49,8 +49,8 @@ public:
 	Ref<GDKGameSaveUpdate> create_update() const;
 	inline String get_name() const { return _name; }
 
-	TypedDictionary<String, int> enumerate_blob_info() const;
-	TypedDictionary<String, int> enumerate_blob_info_by_name(const String& prefix) const;
+	TypedArray<Ref<GDKGameSaveBlobInfo>> enumerate_blob_info() const;
+	TypedArray<Ref<GDKGameSaveBlobInfo>> enumerate_blob_info_by_name(const String& prefix) const;
 
 	Dictionary read_blob_data(PackedStringArray blobNames, int blobSize);
 	Ref<GDKAsyncBlock> read_blob_data_async(PackedStringArray blobNames);

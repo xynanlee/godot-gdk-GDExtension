@@ -16,6 +16,7 @@
 #include "gdk_user.h"
 #include "gdk_error.h"
 #include "gdk_package.h"
+#include "gdk_stringverify.h"
 
 using namespace godot;
 
@@ -40,6 +41,8 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKXPackageChunkSelector);
 	GDREGISTER_CLASS(GDKXPackageInstallationMonitor);
 	GDREGISTER_CLASS(GDKPackage);
+	GDREGISTER_CLASS(GDKXblStringVerifyResult);
+	GDREGISTER_CLASS(GDKStringVerify);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);

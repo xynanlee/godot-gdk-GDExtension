@@ -14,7 +14,7 @@ Ref<GDKGameSaveBlob> GDKGameSaveBlob::create(const XGameSaveBlob *blob) {
 		memcpy(data.ptrw(), blob->data, blob->info.size);
 		wrapper->_data = data;
 	}
-	return blob;
+	return wrapper;
 }
 
 void GDKGameSaveBlob::_bind_methods() {

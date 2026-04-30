@@ -52,7 +52,7 @@ public:
 	TypedArray<Ref<GDKGameSaveBlobInfo>> enumerate_blob_info() const;
 	TypedArray<Ref<GDKGameSaveBlobInfo>> enumerate_blob_info_by_name(const String& prefix) const;
 
-	Dictionary read_blob_data(PackedStringArray blobNames, int blobSize);
+	Dictionary read_blob_data(TypedArray<Ref<GDKGameSaveBlobInfo>> blob_infos) const;
 	Ref<GDKAsyncBlock> read_blob_data_async(PackedStringArray blobNames);
 }; 
 }

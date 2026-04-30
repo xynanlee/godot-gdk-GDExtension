@@ -40,7 +40,7 @@ void GDKGameSaveContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("create_update"), &GDKGameSaveContainer::create_update);
 	ClassDB::bind_method(D_METHOD("enumerate_blob_info"), &GDKGameSaveContainer::enumerate_blob_info);
 	ClassDB::bind_method(D_METHOD("enumerate_blob_info_by_name", "prefix"), &GDKGameSaveContainer::enumerate_blob_info_by_name);
-	ClassDB::bind_method(D_METHOD("read_blob_data", "blob_names", "blob_size"), &GDKGameSaveContainer::read_blob_data);
+	ClassDB::bind_method(D_METHOD("read_blob_data", "blob_infos"), &GDKGameSaveContainer::read_blob_data);
 	ClassDB::bind_method(D_METHOD("read_blob_data_async", "blob_names"), &GDKGameSaveContainer::read_blob_data_async);
 }
 
@@ -109,14 +109,18 @@ TypedArray<Ref<GDKGameSaveBlobInfo>> GDKGameSaveContainer::enumerate_blob_info_b
 	return data;
 }
 
-Dictionary GDKGameSaveContainer::read_blob_data(PackedStringArray blobNames, int blobSize) {
+Dictionary GDKGameSaveContainer::read_blob_data(TypedArray<Ref<GDKGameSaveBlobInfo>> blob_infos) const {
 	Dictionary result;
-	uint32_t blobCount = blobNames.size();
+	uint32_t blobCount = blob_infos.size();
 	
+	int blobSize = 0;
 	LocalVector<const char*> blobNameVector;
 	blobNameVector.reserve(blobCount);
+
 	for (int i = 0; i < blobCount; i++) {
-		blobNameVector.push_back(blobNames.get(i).utf8().get_data());
+		Ref<GDKGameSaveBlobInfo> info = blob_infos[i];
+		blobNameVector.push_back(info->get_name().utf8().get_data());
+		blobSize += sizeof(XGameSaveBlob) + 1 + info->get_name().length() + info->get_size();
 	}
 
 	HRESULT hr = S_OK;

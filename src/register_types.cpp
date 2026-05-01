@@ -38,13 +38,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(GDKXGameUINotificationPositionHint);
-	GDREGISTER_CLASS(GDKXGameUITextEntryInputScope);
-	GDREGISTER_CLASS(GDKXGameUITextEntryPositionHint);
-	GDREGISTER_CLASS(GDKXGameUITextEntryVisibilityFlags);
-	GDREGISTER_CLASS(GDKXGameUITextEntryOptions);
-	GDREGISTER_CLASS(GDKXGameUITextEntryChangeTypeFlags);
-	GDREGISTER_CLASS(GDKGameUITextEntryHandle);
+	
 	GDREGISTER_CLASS(GDKGameUI);
 	GDREGISTER_CLASS(GDKProfile);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);

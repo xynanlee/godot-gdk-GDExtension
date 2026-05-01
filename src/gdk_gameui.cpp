@@ -153,6 +153,14 @@ void GDKGameUI::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_web_authentication_async", "requesting_user", "request_uri", "completion_uri"), &GDKGameUI::show_web_authentication_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_web_authentication_with_options_async", "requesting_user", "request_uri", "completion_uri", "is_fullscreen"), &GDKGameUI::show_web_authentication_with_options_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("text_entry_open", "options", "max_length", "initial_text", "initial_cursor_index"), &GDKGameUI::text_entry_open);
+
+	GDREGISTER_CLASS(GDKXGameUINotificationPositionHint);
+	GDREGISTER_CLASS(GDKXGameUITextEntryInputScope);
+	GDREGISTER_CLASS(GDKXGameUITextEntryPositionHint);
+	GDREGISTER_CLASS(GDKXGameUITextEntryVisibilityFlags);
+	GDREGISTER_CLASS(GDKXGameUITextEntryOptions);
+	GDREGISTER_CLASS(GDKXGameUITextEntryChangeTypeFlags);
+	GDREGISTER_CLASS(GDKGameUITextEntryHandle);
 }
 
 int GDKGameUI::set_notification_position_hint(GDKXGameUINotificationPositionHint::Enum hint) {

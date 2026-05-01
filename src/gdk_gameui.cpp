@@ -145,6 +145,7 @@ void GDKGameUI::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_error_dialog_async", "error_code", "message"), &GDKGameUI::show_error_dialog_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_message_dialog_async", "title_text", "content_text", "first_button_text", "second_button_text", "third_button_text", "default_button_index", "cancel_button_index"), &GDKGameUI::show_message_dialog_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_multiplayer_activity_game_invite_async", "user"), &GDKGameUI::show_multiplayer_activity_game_invite_async);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("show_player_picker_async", "user", "prompt_text", "select_from", "min_selection", "max_selection", "preselected"), &GDKGameUI::show_player_picker_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_player_profile_card_async", "requesting_user", "target_user"), &GDKGameUI::show_player_profile_card_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_send_game_invite_async", "requesting_user", "session_template", "session_id", "invitation_text", "custom_activation_context"), &GDKGameUI::show_send_game_invite_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_state_share_async", "requesting_user", "link_token"), &GDKGameUI::show_state_share_async);

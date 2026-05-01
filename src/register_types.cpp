@@ -16,6 +16,8 @@
 #include "gdk_user.h"
 #include "gdk_error.h"
 #include "gdk_stringverify.h"
+#include "gdk_networking.h"
+#include "gdk_event_object.h"
 
 using namespace godot;
 
@@ -33,6 +35,15 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKEventObject);
+	GDREGISTER_CLASS(GDKXNetworkingThumbprint);
+	GDREGISTER_CLASS(GDKXNetworkingSecurityInformation);
+	GDREGISTER_CLASS(GDKXNetworkingConnectivityLevelHint);
+	GDREGISTER_CLASS(GDKXNetworkingConnectivityCostHint);
+	GDREGISTER_CLASS(GDKXNetworkingConfigurationSetting);
+	GDREGISTER_CLASS(GDKXNetworkingStatisticsType);
+	GDREGISTER_CLASS(GDKNetworking);
+	GDREGISTER_CLASS(GDKNetworkingEvents);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);
 	GDREGISTER_CLASS(GDKAsyncBlock);

@@ -10,6 +10,7 @@
 #include <XUser.h>
 #include <XGame.h>
 #include <XGameInvite.h>
+#include "gdk_event_object.h"
 
 #include <string>
 
@@ -40,6 +41,8 @@ namespace godot {
 	private:
 		static GodotGDK* _instance;
 		bool _initialized = false;
+
+		TypedArray<GDKEventObject> _event_objects;
 		XTaskQueueHandle _async_queue = nullptr;
 		XTaskQueueRegistrationToken _invite_token = {};
 		XTaskQueueRegistrationToken _user_change_token = {};
@@ -62,6 +65,7 @@ namespace godot {
 		inline XTaskQueueHandle get_async_queue() { return _async_queue; }
 
 		int InitializeGDK(Callable, String);
+
 		static XTaskQueueHandle GetQueueHandle();
 
 		static XUserLocalId GetUserId();
@@ -76,7 +80,8 @@ namespace godot {
 		void launch_new_game(const String &exe_path, const String &args, Ref<GDKUser> default_user);
 		int64_t launch_restart_on_crash(const String &args);
 
-
+private:
+		void initialize_event_objects();
 	};
 }
 

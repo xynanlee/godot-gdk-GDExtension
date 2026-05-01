@@ -19,6 +19,7 @@
 #include "gdk_user.h"
 #include "gdk_error.h"
 #include "gdk_stringverify.h"
+#include "gdk_achievements_manager.h"
 
 using namespace godot;
 
@@ -36,6 +37,11 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+
+	GDREGISTER_CLASS(GDKXblAchievementsManagerSortOrder);
+	GDREGISTER_CLASS(GDKXblAchievementsManagerResult);
+	GDREGISTER_CLASS(GDKXblAchievementsManagerEvent);
+	GDREGISTER_RUNTIME_CLASS(GDKAchievementsManager);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);
 	GDREGISTER_CLASS(GDKAsyncBlock);

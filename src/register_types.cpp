@@ -20,6 +20,7 @@
 #include "gdk_error.h"
 #include "gdk_profile.h"
 #include "gdk_stringverify.h"
+#include "gdk_events.h"
 
 using namespace godot;
 
@@ -37,6 +38,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKEvents);
 	GDREGISTER_CLASS(GDKProfile);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);

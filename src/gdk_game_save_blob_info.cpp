@@ -1,11 +1,16 @@
 ﻿#include "gdk_game_save_blob_info.h"
 
-void GDKGameSaveBlobInfo::setInfo(const XGameSaveBlobInfo* src) {
-	if (!src) return;
-
-	name = src->name;
-	size = src->size;
+using namespace godot;
+Ref<GDKGameSaveBlobInfo> GDKGameSaveBlobInfo::create(const XGameSaveBlobInfo *info) {
+	Ref<GDKGameSaveBlobInfo> wrapper;
+	if (info != nullptr) {
+		wrapper.instantiate();
+		wrapper->_name = String(info->name);
+		wrapper->_size = (int64_t)info->size;
+	}
+	return wrapper;
 }
+
 void GDKGameSaveBlobInfo::_bind_methods() {
 	// Godot-visible properties via getters
 	ClassDB::bind_method(D_METHOD("get_name"), &GDKGameSaveBlobInfo::get_name);

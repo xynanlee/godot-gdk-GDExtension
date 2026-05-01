@@ -71,7 +71,14 @@ void GDKXNetworkingStatisticsType::_bind_methods() {
 }
 
 void GDKNetworking::_bind_methods() {
-
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("get_connectivity_hint"), &GDKNetworking::get_connectivity_hint);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("query_configuration_setting", "setting"), &GDKNetworking::query_configuration_setting);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("query_preferred_local_udp_multiplayer_port"), &GDKNetworking::query_preferred_local_udp_multiplayer_port);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("query_preferred_local_udp_multiplayer_port_async"), &GDKNetworking::query_preferred_local_udp_multiplayer_port_async);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("query_security_information_for_url_async", "url"), &GDKNetworking::query_security_information_for_url_async);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("query_security_information_for_url_utf16_async", "url"), &GDKNetworking::query_security_information_for_url_utf16_async);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("query_statistics", "type"), &GDKNetworking::query_statistics);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("set_configuration_setting", "setting", "value"), &GDKNetworking::set_configuration_setting);
 }
 
 Dictionary GDKNetworking::get_connectivity_hint() {

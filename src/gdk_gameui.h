@@ -155,7 +155,7 @@ public:
                                                         int min_selection,
                                                         int max_selection,
                                                         PackedInt64Array preselected = PackedInt64Array());
-    static Ref<GDKAsyncBlock> show_player_profile_card_async(Ref<GDKUser> requesting_user, Ref<GDKUser> target_user);
+    static Ref<GDKAsyncBlock> show_player_profile_card_async(Ref<GDKUser> requesting_user, int64_t target_user_id);
     static Ref<GDKAsyncBlock> show_send_game_invite_async(  Ref<GDKUser> requesting_user,
                                                             const String& session_template,
                                                             const String& session_id,

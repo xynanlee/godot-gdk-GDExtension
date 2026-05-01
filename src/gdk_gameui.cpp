@@ -146,7 +146,7 @@ void GDKGameUI::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_message_dialog_async", "title_text", "content_text", "first_button_text", "second_button_text", "third_button_text", "default_button_index", "cancel_button_index"), &GDKGameUI::show_message_dialog_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_multiplayer_activity_game_invite_async", "user"), &GDKGameUI::show_multiplayer_activity_game_invite_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_player_picker_async", "user", "prompt_text", "select_from", "min_selection", "max_selection", "preselected"), &GDKGameUI::show_player_picker_async);
-    ClassDB::bind_static_method(get_class_static(), D_METHOD("show_player_profile_card_async", "requesting_user", "target_user"), &GDKGameUI::show_player_profile_card_async);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("show_player_profile_card_async", "requesting_user", "target_user_id"), &GDKGameUI::show_player_profile_card_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_send_game_invite_async", "requesting_user", "session_template", "session_id", "invitation_text", "custom_activation_context"), &GDKGameUI::show_send_game_invite_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_state_share_async", "requesting_user", "link_token"), &GDKGameUI::show_state_share_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("show_text_entry_async", "input_scope", "max_text_length", "title_text", "description_text", "default_text"), &GDKGameUI::show_text_entry_async);
@@ -314,7 +314,7 @@ Ref<GDKAsyncBlock> GDKGameUI::show_player_picker_async( Ref<GDKUser> user,
 	return asyncBlock;
 }
 
-Ref<GDKAsyncBlock> GDKGameUI::show_player_profile_card_async(Ref<GDKUser> requesting_user, Ref<GDKUser> target_user) {
+Ref<GDKAsyncBlock> GDKGameUI::show_player_profile_card_async(Ref<GDKUser> requesting_user, int64_t target_user_id) {
 	Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(GDKHelpers::get_async_queue());
     asyncBlock->set_callback([](XAsyncBlock* async) {
         GDKAsyncBlock* wrapper = reinterpret_cast<GDKAsyncBlock*>(async->context);
@@ -324,8 +324,7 @@ Ref<GDKAsyncBlock> GDKGameUI::show_player_profile_card_async(Ref<GDKUser> reques
         wrapper->emit(return_data);
     });
 
-    const int64_t xbox_id = target_user->get_id();
-    HRESULT hr = XGameUiShowPlayerProfileCardAsync(asyncBlock->get_block(), requesting_user->get_user(), (uint64_t)xbox_id);
+    HRESULT hr = XGameUiShowPlayerProfileCardAsync(asyncBlock->get_block(), requesting_user->get_user(), (uint64_t)target_user_id);
     ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XGameUiShowPlayerProfileCardAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }

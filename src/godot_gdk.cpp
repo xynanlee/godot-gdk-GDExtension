@@ -173,6 +173,11 @@ int GodotGDK::InitializeGDK(Callable cb, String scid) {
 	hr = XUserRegisterForDefaultAudioEndpointUtf16Changed(queue, this, &DefaultAudioEndpointUtf16ChangeCallback, &_default_audio_endpoint_change_token);
 	CheckResult(hr, "Default audio endpoint change event registered", "Failed to register default audio endpoint change event");
 
+	for (int i = 0; i < _event_objects.size(); i++) {
+		Ref<GDKEventObject> obj = _event_objects[i];
+		obj->initialize();
+	}
+
 	hr = Identity_TrySignInDefaultUserSilently(queue, cb);
 	CheckResult(hr, "Login successfully started", "Failed to start login");
 

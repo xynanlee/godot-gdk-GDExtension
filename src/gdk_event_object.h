@@ -2,6 +2,7 @@
 
 #include <classes/ref_counted.hpp>
 #include <Windows.h>
+#include <classes/engine.hpp>
 
 extern "C" {
     #include <XTaskQueue.h>
@@ -16,5 +17,6 @@ protected:
 
 public:
     virtual HRESULT initialize();
+    virtual StringName get_singleton_name() const = 0;
 };
 }

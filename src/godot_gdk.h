@@ -80,8 +80,8 @@ namespace godot {
 		void launch_new_game(const String &exe_path, const String &args, Ref<GDKUser> default_user);
 		int64_t launch_restart_on_crash(const String &args);
 
+		void set_event_objects(TypedArray<GDKEventObject> event_objects);
 private:
-		void initialize_event_objects();
 	};
 }
 

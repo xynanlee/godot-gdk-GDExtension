@@ -305,9 +305,6 @@ int64_t GodotGDK::launch_restart_on_crash(const String &args) {
 	return (int64_t)hr;
 }
 
-void GodotGDK::initialize_event_objects() {
-	Ref<GDKNetworkingEvents> networking_events;
-	networking_events.instantiate();
-	networking_events->initialize();
-	_event_objects.push_back(networking_events);
+void GodotGDK::set_event_objects(TypedArray<GDKEventObject> in_objects) {
+	_event_objects = in_objects;
 }

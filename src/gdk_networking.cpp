@@ -205,6 +205,8 @@ int GDKNetworking::set_configuration_setting(GDKXNetworkingConfigurationSetting:
     return (int64_t)hr;
 }
 
+GDKNetworkingEvents* GDKNetworkingEvents::_instance = nullptr;
+
 void GDKNetworkingEvents::_bind_methods() {
     ADD_SIGNAL(MethodInfo("connectivity_hint_changed", PropertyInfo(Variant::DICTIONARY, "hint")));
     ADD_SIGNAL(MethodInfo("preferred_multiplayer_port_changed", PropertyInfo(Variant::INT, "port")));
@@ -226,9 +228,9 @@ void GDKNetworkingEvents::_notification(int p_what) {
     }
 }
 
-HRESULT GDKNetworkingEvents::initialize() {
-    HRESULT hr = XTaskQueueCreate(XTaskQueueDispatchMode::Immediate, XTaskQueueDispatchMode::Immediate, &_async_queue);
-    ERR_FAIL_COND_V_MSG(FAILED(hr), hr, vformat("GDKNetworkingEvents::XTaskQueueCreate Error: 0x%08ux", (uint64_t)hr));
+GDKNetworkingEvents::GDKNetworkingEvents() {
+	HRESULT hr = XTaskQueueCreate(XTaskQueueDispatchMode::Immediate, XTaskQueueDispatchMode::Immediate, &_async_queue);
+    ERR_FAIL_COND_MSG(FAILED(hr), vformat("GDKNetworkingEvents::XTaskQueueCreate Error: 0x%08ux", (uint64_t)hr));
     
     hr = XNetworkingRegisterConnectivityHintChanged(_async_queue, this, 
             [](void* context, const XNetworkingConnectivityHint* hint) {
@@ -258,5 +260,13 @@ HRESULT GDKNetworkingEvents::initialize() {
     if (FAILED(hr)) {
         ERR_PRINT(vformat("GDKNetworkingEvents::XNetworkingRegisterPreferredLocalUdpMultiplayerPortChanged Error: 0x%08ux", (uint64_t)hr));
     }
-    return hr;
+}
+
+GDKNetworkingEvents* GDKNetworkingEvents::get_singleton() {
+	if (_instance) {
+        return _instance;
+    }
+
+    _instance = memnew(GDKNetworkingEvents);
+    return _instance;
 }

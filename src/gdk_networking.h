@@ -132,6 +132,7 @@ class GDKNetworkingEvents: public GDKEventObject {
     GDCLASS(GDKNetworkingEvents, RefCounted);
 
 private:
+    static GDKNetworkingEvents* _instance;
     XTaskQueueHandle _async_queue = nullptr;
     XTaskQueueRegistrationToken _hint_change_token = {};
     XTaskQueueRegistrationToken _port_change_token = {};
@@ -141,7 +142,9 @@ protected:
     void _notification(int p_what);
 
 public:
-    virtual HRESULT initialize() override;
+    GDKNetworkingEvents();
+    static GDKNetworkingEvents* get_singleton();
+    inline virtual StringName get_singleton_name() const override { return "GDKNetworkingEvents"; }
 };
 }
 

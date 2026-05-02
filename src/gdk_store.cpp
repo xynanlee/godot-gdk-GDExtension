@@ -18,6 +18,7 @@ void GDKXStoreSku::_bind_methods() {
    ClassDB::bind_method(D_METHOD("get_bundled_skus"), &GDKXStoreSku::get_bundled_skus);
    ClassDB::bind_method(D_METHOD("get_images"), &GDKXStoreSku::get_images);
    ClassDB::bind_method(D_METHOD("get_videos"), &GDKXStoreSku::get_videos);
+   ClassDB::bind_method(D_METHOD("get_availabilities"), &GDKXStoreSku::get_availabilities);
 
    ADD_PROPERTY(PropertyInfo(Variant::STRING, "sku_id"), "", "get_sku_id");
    ADD_PROPERTY(PropertyInfo(Variant::STRING, "title"), "", "get_title");
@@ -32,7 +33,7 @@ void GDKXStoreSku::_bind_methods() {
    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "bundled_skus"), "", "get_bundled_skus");
    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "images", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKXStoreImage"), "", "get_images");
    ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "videos", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKXStoreVideo"), "", "get_videos");
-   ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "availability", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKXStoreAvailability"), "", "get_availability");
+   ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "availability", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKXStoreAvailability"), "", "get_availabilities");
 }
 
 Ref<GDKXStoreSku> GDKXStoreSku::create(const XStoreSku *sku) {
@@ -461,7 +462,7 @@ void GDKStore::_bind_methods() {
     ClassDB::bind_method(D_METHOD("query_consumable_balance_remaining_async", "store_product_id"), &GDKStore::query_consumable_balance_remaining_async);
     ClassDB::bind_method(D_METHOD("query_entitled_products_async", "product_kinds", "max_items_to_retrieve_per_page"), &GDKStore::query_entitled_products_async);
     ClassDB::bind_method(D_METHOD("query_game_and_dlc_package_updates_async"), &GDKStore::query_game_and_dlc_package_updates_async);
-    ClassDB::bind_method(D_METHOD("query_game_licenses_async"), &GDKStore::query_game_license_async);
+    ClassDB::bind_method(D_METHOD("query_game_license_async"), &GDKStore::query_game_license_async);
     ClassDB::bind_method(D_METHOD("query_license_token_async", "product_ids", "custom_developer_string"), &GDKStore::query_license_token_async);
     ClassDB::bind_method(D_METHOD("query_package_identifier", "store_id"), &GDKStore::query_package_identifier);
     ClassDB::bind_method(D_METHOD("query_package_updates_async", "package_identifiers"), &GDKStore::query_package_updates_async);
@@ -475,6 +476,20 @@ void GDKStore::_bind_methods() {
     ClassDB::bind_method(D_METHOD("show_purchase_ui_async", "store_id", "name", "extended_json_data"), &GDKStore::show_purchase_ui_async);
     ClassDB::bind_method(D_METHOD("show_rate_and_review_ui_async"), &GDKStore::show_rate_and_review_ui_async);
     ClassDB::bind_method(D_METHOD("show_redeem_token_ui_async", "token", "disallow_csv_redemption", "allowed_store_ids"), &GDKStore::show_redeem_token_ui_async);
+
+	GDREGISTER_CLASS(GDKXStoreProductKind);
+	GDREGISTER_CLASS(GDKXStorePrice);
+	GDREGISTER_CLASS(GDKXStoreCollectionData);
+	GDREGISTER_CLASS(GDKXStoreSubscriptionInfo);
+	GDREGISTER_CLASS(GDKXStoreImage);
+	GDREGISTER_CLASS(GDKXStoreVideo);
+	GDREGISTER_CLASS(GDKXStoreAvailability);
+	GDREGISTER_CLASS(GDKXStoreSku);
+	GDREGISTER_CLASS(GDKXStoreProduct);
+	GDREGISTER_CLASS(GDKXStoreProductQueryHandle);
+	GDREGISTER_CLASS(GDKXStoreCanLicenseStatus);
+	GDREGISTER_CLASS(GDKXStoreLicenseHandle);
+    GDREGISTER_CLASS(GDKXStoreGameLicense);
 }
 
 void GDKStore::_notification(int p_what) {
@@ -566,7 +581,7 @@ Ref<GDKAsyncBlock> GDKStore::can_acquire_license_for_package_async(const String 
 
         if (SUCCEEDED(hr)) {
             return_data["status"] = (GDKXStoreCanLicenseStatus::Enum)result.status;
-            return_data["licenseable_sku"] = String(result.licensableSku);
+            return_data["licensable_sku"] = String(result.licensableSku);
         }
         wrapper->emit(return_data);
     });
@@ -588,7 +603,7 @@ Ref<GDKAsyncBlock> GDKStore::can_acquire_license_for_store_id_async(const String
 
         if (SUCCEEDED(hr)) {
             return_data["status"] = (GDKXStoreCanLicenseStatus::Enum)result.status;
-            return_data["licenseable_sku"] = String(result.licensableSku);
+            return_data["licensable_sku"] = String(result.licensableSku);
         }
         wrapper->emit(return_data);
     });
@@ -945,17 +960,9 @@ Ref<GDKAsyncBlock> GDKStore::query_game_license_async() const {
         HRESULT hr = XStoreQueryGameLicenseResult(async, &license);
         return_data["hresult"] = hr;
         if (SUCCEEDED(hr)) {
-            Dictionary return_license;
-            return_license["sku_store_id"] = String(license.skuStoreId);
-            return_license["is_active"] = license.isActive;
-            return_license["is_trial_owned_by_this_user"] = license.isTrialOwnedByThisUser;
-            return_license["is_disc_license"] = license.isDiscLicense;
-            return_license["is_trial"] = license.isTrial;
-            return_license["trial_time_remaining_in_seconds"] = license.trialTimeRemainingInSeconds;
-            return_license["trial_unique_id"] = String(license.trialUniqueId);
-            return_license["expiration_date"] = (int64_t)license.expirationDate;
 
-            return_data["license"] = return_license;
+            Ref<GDKXStoreGameLicense> license_data = GDKXStoreGameLicense::create(&license);
+            return_data["license"] = license_data;
         }
         wrapper->emit(return_data);
     });
@@ -1287,4 +1294,40 @@ Ref<GDKAsyncBlock> GDKStore::show_redeem_token_ui_async(const String &token, boo
                                                 asyncBlock->get_block());
     ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XStoreShowRedeemTokenUIAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
+}
+
+void GDKXStoreGameLicense::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("get_sku_store_id"), &GDKXStoreGameLicense::get_sku_store_id);
+    ClassDB::bind_method(D_METHOD("is_active"), &GDKXStoreGameLicense::is_active);
+    ClassDB::bind_method(D_METHOD("is_trial_owned_by_this_user"), &GDKXStoreGameLicense::is_trial_owned_by_this_user);
+    ClassDB::bind_method(D_METHOD("is_disc_license"), &GDKXStoreGameLicense::is_disc_license);
+    ClassDB::bind_method(D_METHOD("is_trial"), &GDKXStoreGameLicense::is_trial);
+    ClassDB::bind_method(D_METHOD("get_trial_time_remaining_in_seconds"), &GDKXStoreGameLicense::get_trial_time_remaining_in_seconds);
+    ClassDB::bind_method(D_METHOD("get_trial_unique_id"), &GDKXStoreGameLicense::get_trial_unique_id);
+    ClassDB::bind_method(D_METHOD("get_expiration_date"), &GDKXStoreGameLicense::get_expiration_date);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "sku_store_id"), "", "get_sku_store_id");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_active"), "", "is_active");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_trial_owned_by_this_user"), "", "is_trial_owned_by_this_user");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_disc_license"), "", "is_disc_license");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "is_trial"), "", "is_trial");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "trial_time_remaining_in_seconds"), "", "get_trial_time_remaining_in_seconds");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "trial_unique_id"), "", "get_trial_unique_id");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "expiration_date"), "", "get_expiration_date");
+}
+
+Ref<GDKXStoreGameLicense> GDKXStoreGameLicense::create(const XStoreGameLicense *license) {
+	Ref<GDKXStoreGameLicense> wrapper;
+    if (license != nullptr) {
+        wrapper.instantiate();
+        wrapper->_sku_store_id = String(license->skuStoreId);
+        wrapper->_is_active = license->isActive;
+        wrapper->_is_trial_owned_by_this_user = license->isTrialOwnedByThisUser;
+        wrapper->_is_disc_license = license->isDiscLicense;
+        wrapper->_is_trial = license->isTrial;
+        wrapper->_trial_time_remaining_in_seconds = (int64_t)license->trialTimeRemainingInSeconds;
+        wrapper->_trial_unique_id = String(license->trialUniqueId);
+        wrapper->_expiration_date = (int64_t)license->expirationDate;
+    }
+    return wrapper;
 }

@@ -313,6 +313,35 @@ public:
     bool is_valid_license() const;
 };
 
+class GDKXStoreGameLicense: public RefCounted {
+    GDCLASS(GDKXStoreGameLicense, RefCounted);
+
+private:
+    String _sku_store_id;
+    bool _is_active;
+    bool _is_trial_owned_by_this_user;
+    bool _is_disc_license;
+    bool _is_trial;
+    int64_t _trial_time_remaining_in_seconds;
+    String _trial_unique_id;
+    int64_t _expiration_date;
+
+protected:
+    static void _bind_methods();
+
+public:
+    static Ref<GDKXStoreGameLicense> create(const XStoreGameLicense* license);
+
+    inline String get_sku_store_id() const { return _sku_store_id; }
+    inline bool is_active() const { return _is_active; }
+    inline bool is_trial_owned_by_this_user() const { return _is_trial_owned_by_this_user; }
+    inline bool is_disc_license() const { return _is_disc_license; }
+    inline bool is_trial() const { return _is_trial; }
+    inline int64_t get_trial_time_remaining_in_seconds() const { return _trial_time_remaining_in_seconds; }
+    inline String get_trial_unique_id() const { return _trial_unique_id; }
+    inline int64_t get_expiration_date() const { return _expiration_date; }
+};
+
 class GDKStore : public RefCounted {
     GDCLASS(GDKStore, RefCounted);
 

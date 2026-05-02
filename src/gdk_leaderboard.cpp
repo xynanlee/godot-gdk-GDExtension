@@ -244,6 +244,16 @@ Ref<GDKAsyncBlock> GDKXblLeaderboardResult::get_next_async(Ref<GDKUser> user, in
     return asyncBlock;
 }
 
+void GDKLeaderboard::_bind_methods() {
+    GDREGISTER_CLASS(GDKXblLeaderboardRow);
+    GDREGISTER_CLASS(GDKXblLeaderboardQuery);
+    GDREGISTER_CLASS(GDKXblLeaderboardColumn);
+    GDREGISTER_CLASS(GDKXblLeaderboardResult);
+    GDREGISTER_CLASS(GDKXblLeaderboardQuery);
+
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("get_leaderboard_async", "user", "query"), &GDKLeaderboard::get_leaderboard_async);
+}
+
 Ref<GDKAsyncBlock> GDKLeaderboard::get_leaderboard_async(Ref<GDKUser> user, Ref<GDKXblLeaderboardQuery> query) {
 	Ref<GDKAsyncBlock> asyncBlock = GDKAsyncBlock::create(GDKHelpers::get_async_queue());
     asyncBlock->set_callback([](XAsyncBlock* async) {
@@ -274,4 +284,3 @@ Ref<GDKAsyncBlock> GDKLeaderboard::get_leaderboard_async(Ref<GDKUser> user, Ref<
     ERR_FAIL_COND_V_MSG(FAILED(hr), nullptr, vformat("XblLeaderboardGetLeaderboardAsync Error: 0x%08ux", (uint64_t)hr));
     return asyncBlock;
 }
-

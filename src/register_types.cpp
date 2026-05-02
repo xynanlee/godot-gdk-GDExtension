@@ -10,12 +10,17 @@
 #include "gdk_asyncblock.h"
 #include "gdk_achievement.h"
 #include "gdk_achievements.h"
+#include "gdk_game_save_provider.h"
+#include "gdk_game_save_update.h"
+#include "gdk_game_save_container.h"
 #include "gdk_game_save_files.h"
 #include "gdk_game_save.h"
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
 #include "gdk_package.h"
+#include "gdk_gameui.h"
+#include "gdk_profile.h"
 #include "gdk_stringverify.h"
 
 using namespace godot;
@@ -35,12 +40,19 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 		return;
 	}
 	GDREGISTER_CLASS(GDKPackage);
+	
+	GDREGISTER_CLASS(GDKGameUI);
+	GDREGISTER_CLASS(GDKProfile);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);
 	GDREGISTER_CLASS(GDKAsyncBlock);
 	GDREGISTER_CLASS(GDKAchievement);
 	GDREGISTER_CLASS(GDKAchievements);
 	GDREGISTER_CLASS(GDKAchievementsResultHandle);
+	GDREGISTER_CLASS(GDKGameSaveProvider);
+	GDREGISTER_CLASS(GDKGameSaveContainerInfo);
+	GDREGISTER_CLASS(GDKGameSaveContainer);
+	GDREGISTER_CLASS(GDKGameSaveUpdate);
 	GDREGISTER_RUNTIME_CLASS(GDKPromise);
 	GDREGISTER_CLASS(GDKGameSaveFiles);
 	GDREGISTER_CLASS(GDKGameSave);

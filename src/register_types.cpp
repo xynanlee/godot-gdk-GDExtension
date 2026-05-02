@@ -34,12 +34,6 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
-	GDREGISTER_CLASS(GDKXPackageMount);
-	GDREGISTER_CLASS(GDKXPackageEnumerationScope);
-	GDREGISTER_CLASS(GDKXPackageKind);
-	GDREGISTER_CLASS(GDKXPackageChunkAvailability);
-	GDREGISTER_CLASS(GDKXPackageChunkSelector);
-	GDREGISTER_CLASS(GDKXPackageInstallationMonitor);
 	GDREGISTER_CLASS(GDKPackage);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);

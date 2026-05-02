@@ -3,6 +3,7 @@
 #include <classes/ref_counted.hpp>
 #include <variant/typed_array.hpp>
 #include "gdk_asyncblock.h"
+#include "gdk_system.h"
 #include <XTaskQueue.h>
 
 extern "C" {
@@ -10,6 +11,30 @@ extern "C" {
 }
 
 namespace godot {
+
+class GDKXPackageFeature: public RefCounted {
+    GDCLASS(GDKXPackageFeature, RefCounted);
+
+private:
+    String _id;
+    String _display_name;
+    String _tags;
+    bool _hidden;
+    PackedStringArray _store_ids;
+
+protected:
+    static void _bind_methods();
+
+public:
+    static Ref<GDKXPackageFeature> create(const XPackageFeature* feature);
+
+    inline String get_id() const { return _id; }
+    inline String get_display_name() const { return _display_name; }
+    inline String get_tags() const { return _tags; }
+    inline bool is_hidden() const { return _hidden; }
+    inline PackedStringArray get_store_ids() const { return _store_ids; }
+};
+
 class GDKXPackageMount: public RefCounted {
     GDCLASS(GDKXPackageMount, RefCounted);
 
@@ -109,6 +134,43 @@ public:
     Dictionary get_installation_progress() const;
     bool update_installation_progress() const;
     inline XTaskQueueRegistrationToken get_token() const { return _token; }
+};
+
+class GDKXPackageDetails: public RefCounted {
+    GDCLASS(GDKXPackageDetails, RefCounted);
+
+private:
+    String _package_identifier;
+    Ref<GDKXVersion> _version;
+    GDKXPackageKind::Enum _kind;
+    String _display_name;
+    String _description;
+    String _publisher;
+    String _store_id;
+    bool _installing;
+    int _index;
+    int _count;
+    bool _age_restricted;
+    String _title_id;
+
+protected:
+    static void _bind_methods();
+
+public:
+    static Ref<GDKXPackageDetails> create(const XPackageDetails* details);
+
+    inline String get_package_identifier() const { return _package_identifier; }
+    inline Ref<GDKXVersion> get_version() const { return _version; }
+    inline GDKXPackageKind::Enum get_kind() const { return _kind; }
+    inline String get_display_name() const { return _display_name; }
+    inline String get_description() const { return _description; }
+    inline String get_publisher() const { return _publisher; }
+    inline String get_store_id() const { return _store_id; }
+    inline bool is_installing() const { return _installing; }
+    inline int get_index() const { return _index; }
+    inline int get_count() const { return _count; }
+    inline bool is_age_restricted() const { return _age_restricted; }
+    inline String get_title_id() const { return _title_id; }
 };
 
 class GDKPackage: public RefCounted {

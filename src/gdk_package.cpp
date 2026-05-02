@@ -1,6 +1,5 @@
 #include "gdk_package.h"
 #include "gdk_helpers.h"
-#include "gdk_system.h"
 #include <templates/local_vector.hpp>
 
 using namespace godot;
@@ -185,11 +184,21 @@ void GDKPackage::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_user_locale"), &GDKPackage::get_user_locale);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_write_stats"), &GDKPackage::get_write_stats);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("install_chunks", "package_identifier", "selectors", "minimum_update_interval_ms", "suppres_user_confirmation"), &GDKPackage::install_chunks);
-    ClassDB::bind_static_method(get_class_static(), D_METHOD("install_chunks_async", "package_identifier", "selectors", "minimum_update_interval_ms", "suppres_user_confirmation"), &GDKPackage::install_chunks_async);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("install_chunks_async", "package_identifier", "selectors", "minimum_update_interval_ms", "suppress_user_confirmation"), &GDKPackage::install_chunks_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("is_packaged_process"), &GDKPackage::is_packaged_process);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("uninstall_package", "package_identifier"), &GDKPackage::uninstall_package);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("uninstall_chunks", "package_identifier", "selectors"), &GDKPackage::uninstall_chunks);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("uninstall_uwp_instance", "package_name"), &GDKPackage::uninstall_uwp_instance);
+
+    GDREGISTER_CLASS(GDKXPackageMount);
+    GDREGISTER_CLASS(GDKXPackageEnumerationScope);
+    GDREGISTER_CLASS(GDKXPackageKind);
+    GDREGISTER_CLASS(GDKXPackageChunkAvailability);
+    GDREGISTER_CLASS(GDKXPackageChunkSelector);
+    GDREGISTER_CLASS(GDKXPackageInstallationMonitor);
+    GDREGISTER_CLASS(GDKXPackageDetails);
+    GDREGISTER_CLASS(GDKXPackageFeature);
+    GDREGISTER_CLASS(GDKXVersion);
 }
 
 Dictionary GDKPackage::get_current_process_package_identifier() {
@@ -251,19 +260,7 @@ int GDKPackage::enumerate_features(const String &package_identifier, const Calla
     Callable* hCallback = memnew(Callable(callback));
     HRESULT hr = XPackageEnumerateFeatures(package_identifier.utf8().get_data(), hCallback, 
                     [](void* context, const XPackageFeature* feature) -> bool {
-                        Dictionary feature_data;
-                        feature_data["id"] = String(feature->id);
-                        feature_data["display_name"] = String(feature->displayName);
-                        feature_data["tags"] = String(feature->tags);
-                        feature_data["hidden"] = feature->hidden;
-                        
-                        PackedStringArray storeIds;
-                        storeIds.resize(feature->storeIdCount);
-                        for (int i = 0; i < feature->storeIdCount; i++) {
-                            storeIds.push_back(String(feature->storeIds[i]));
-                        }
-                        feature_data["store_ids"] = storeIds;
-                        
+                        Ref<GDKXPackageFeature> feature_data = GDKXPackageFeature::create(feature);
                         Callable* c = static_cast<Callable*>(context);
                         return c->call(feature_data);
                     });
@@ -277,20 +274,7 @@ int GDKPackage::enumerate_packages(GDKXPackageKind::Enum kind, GDKXPackageEnumer
 	Callable* hCallback = memnew(Callable(callback));
     HRESULT hr = XPackageEnumeratePackages((XPackageKind)kind, (XPackageEnumerationScope)scope, hCallback,
                     [](void* context, const XPackageDetails* details) -> bool {
-                        Dictionary package_details;
-                        package_details["package_identifier"] = String(details->packageIdentifier);
-                        package_details["version"] = GDKXVersion::create(&details->version);
-                        package_details["kind"] = (GDKXPackageKind::Enum)details->kind;
-                        package_details["display_name"] = String(details->displayName);
-                        package_details["description"] = String(details->description);
-                        package_details["publisher"] = String(details->publisher);
-                        package_details["store_id"] = String(details->storeId);
-                        package_details["installing"] = details->installing;
-                        package_details["index"] = details->index;
-                        package_details["count"] = details->count;
-                        package_details["age_restricted"] = details->ageRestricted;
-                        package_details["title_id"] = String(details->titleId);
-
+                        Ref<GDKXPackageDetails> package_details = GDKXPackageDetails::create(details);
                         Callable* c = static_cast<Callable*>(context);
                         return c->call(package_details);
                     });
@@ -493,4 +477,65 @@ int GDKPackage::uninstall_uwp_instance(const String &package_name) {
     HRESULT hr = XPackageUninstallUWPInstance(package_name.utf8().get_data());
     ERR_FAIL_COND_V_MSG(FAILED(hr), (int64_t)hr, vformat("XPackageUninstallUwpInstance Error: 0x%08ux", (uint64_t)hr));
     return (int64_t)hr;
+}
+
+void GDKXPackageFeature::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("get_id"), &GDKXPackageFeature::get_id);
+    ClassDB::bind_method(D_METHOD("get_display_name"), &GDKXPackageFeature::get_display_name);
+    ClassDB::bind_method(D_METHOD("get_tags"), &GDKXPackageFeature::get_tags);
+    ClassDB::bind_method(D_METHOD("is_hidden"), &GDKXPackageFeature::is_hidden);
+    ClassDB::bind_method(D_METHOD("get_store_ids"), &GDKXPackageFeature::get_store_ids);
+}
+
+Ref<GDKXPackageFeature> GDKXPackageFeature::create(const XPackageFeature *feature) {
+	Ref<GDKXPackageFeature> wrapper;
+    if (feature != nullptr) {
+        wrapper.instantiate();
+        wrapper->_id = String(feature->id);
+        wrapper->_display_name = String(feature->displayName);
+        wrapper->_tags = String(feature->tags);
+        wrapper->_hidden = feature->hidden;
+
+        PackedStringArray storeIds;
+        for (int i = 0; i < feature->storeIdCount; i++) {
+            storeIds.push_back(String(feature->storeIds[i]));
+        }
+        wrapper->_store_ids = storeIds;
+    }
+    return wrapper;
+}
+
+void GDKXPackageDetails::_bind_methods() {
+    ClassDB::bind_method(D_METHOD("get_package_identifier"), &GDKXPackageDetails::get_package_identifier);
+    ClassDB::bind_method(D_METHOD("get_version"), &GDKXPackageDetails::get_version);
+    ClassDB::bind_method(D_METHOD("get_kind"), &GDKXPackageDetails::get_kind);
+    ClassDB::bind_method(D_METHOD("get_display_name"), &GDKXPackageDetails::get_display_name);
+    ClassDB::bind_method(D_METHOD("get_description"), &GDKXPackageDetails::get_description);
+    ClassDB::bind_method(D_METHOD("get_publisher"), &GDKXPackageDetails::get_publisher);
+    ClassDB::bind_method(D_METHOD("get_store_id"), &GDKXPackageDetails::get_store_id);
+    ClassDB::bind_method(D_METHOD("is_installing"), &GDKXPackageDetails::is_installing);
+    ClassDB::bind_method(D_METHOD("get_index"), &GDKXPackageDetails::get_index);
+    ClassDB::bind_method(D_METHOD("get_count"), &GDKXPackageDetails::get_count);
+    ClassDB::bind_method(D_METHOD("is_age_restricted"), &GDKXPackageDetails::is_age_restricted);
+    ClassDB::bind_method(D_METHOD("get_title_id"), &GDKXPackageDetails::get_title_id);
+}
+
+Ref<GDKXPackageDetails> GDKXPackageDetails::create(const XPackageDetails *details) {
+	Ref<GDKXPackageDetails> wrapper;
+    if (details != nullptr) {
+        wrapper.instantiate();
+        wrapper->_package_identifier = String(details->packageIdentifier);
+        wrapper->_version = GDKXVersion::create(&details->version);
+        wrapper->_kind = (GDKXPackageKind::Enum)details->kind;
+        wrapper->_display_name = String(details->displayName);
+        wrapper->_description = String(details->description);
+        wrapper->_publisher = String(details->publisher);
+        wrapper->_store_id = String(details->storeId);
+        wrapper->_installing = details->installing;
+        wrapper->_index = details->index;
+        wrapper->_count = details->count;
+        wrapper->_age_restricted = details->ageRestricted;
+        wrapper->_title_id = String(details->titleId);
+    }
+    return wrapper;
 }

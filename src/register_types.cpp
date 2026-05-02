@@ -18,6 +18,8 @@
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
+#include "gdk_gameui.h"
+#include "gdk_profile.h"
 #include "gdk_stringverify.h"
 #include "gdk_achievements_manager.h"
 
@@ -42,6 +44,9 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	GDREGISTER_CLASS(GDKXblAchievementsManagerResult);
 	GDREGISTER_CLASS(GDKXblAchievementsManagerEvent);
 	GDREGISTER_RUNTIME_CLASS(GDKAchievementsManager);
+	
+	GDREGISTER_CLASS(GDKGameUI);
+	GDREGISTER_CLASS(GDKProfile);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);
 	GDREGISTER_CLASS(GDKStringVerify);
 	GDREGISTER_CLASS(GDKAsyncBlock);

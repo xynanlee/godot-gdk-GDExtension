@@ -40,11 +40,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 		return;
 	}
 
-	GDREGISTER_CLASS(GDKXblAchievementsManagerSortOrder);
-	GDREGISTER_CLASS(GDKXblAchievementsManagerResult);
-	GDREGISTER_CLASS(GDKXblAchievementsManagerEvent);
 	GDREGISTER_RUNTIME_CLASS(GDKAchievementsManager);
-	
 	GDREGISTER_CLASS(GDKGameUI);
 	GDREGISTER_CLASS(GDKProfile);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);

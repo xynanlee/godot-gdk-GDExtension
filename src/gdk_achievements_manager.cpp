@@ -5,7 +5,6 @@
 
 using namespace godot;
 
-
 void GDKXblAchievementsManagerSortOrder::_bind_methods() {
     BIND_ENUM_CONSTANT(Unsorted);
     BIND_ENUM_CONSTANT(Ascending);
@@ -87,6 +86,10 @@ void GDKAchievementsManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("is_user_initialized"), &GDKAchievementsManager::is_user_initialized);
     ClassDB::bind_method(D_METHOD("remove_local_user"), &GDKAchievementsManager::remove_local_user);
     ClassDB::bind_method(D_METHOD("update_achievements", "achievement_id", "current_progress"), &GDKAchievementsManager::update_achievements);
+    
+	GDREGISTER_CLASS(GDKXblAchievementsManagerSortOrder);
+	GDREGISTER_CLASS(GDKXblAchievementsManagerResult);
+	GDREGISTER_CLASS(GDKXblAchievementsManagerEvent);
 }
 
 void GDKAchievementsManager::_notification(int p_what) {

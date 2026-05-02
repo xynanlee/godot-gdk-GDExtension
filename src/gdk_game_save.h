@@ -1,45 +1,19 @@
 ﻿#pragma once
 
-#include <Windows.h>
-#include <winapifamily.h>
-#include <objbase.h>
-#include "godot_cpp/classes/ref_counted.hpp"
-#include "godot_cpp/classes/wrapped.hpp"
-#include "godot_cpp/variant/variant.hpp"
-#include <XAsync.h>
-#include <XGameSave.h>
+#include <classes/ref_counted.hpp>
+#include "gdk_user.h"
+#include "gdk_asyncblock.h"
 
-#include <vector>
-
-using namespace godot;
-
+namespace godot {
+class GDKGameSaveProvider;
 class GDKGameSave : public RefCounted {
 	GDCLASS(GDKGameSave, RefCounted)
-
-	void SetGameName(String gameName);
-
-	static void GameSaveProviderAsync_Callback(XAsyncBlock* asyncBlock);
-	static XGameSaveContainerHandle* CreateContainerHandle();
-	XGameSaveUpdateHandle *CreateUpdateHandle(const char *displayName);
-	static bool CALLBACK GetBlobInfoCallback(const XGameSaveBlobInfo* info, void* context);
-	void EnumerateBlobInfoByName();
-
-	static void GetBlobInfoFinal(XGameSaveContainerHandle* containerHandle, const char* path, Vector<const XGameSaveBlobInfo*>* blobArray);
-	static void test(XGameSaveBlobInfo blobInfo, void *context);
 
 protected:
 	static void _bind_methods();
 
 public:
-	GDKGameSave() = default;
-	~GDKGameSave() override = default;
-
-	void InitializeGameSaveProvider(bool syncOnDemand, String containerName);
-	void InitializeGameSaveProviderAsync(Callable callback, bool syncOnDemand, godot::String containerName);
-	godot::Array ReadBlobData(String containerName, godot::Array fileNames);
-	void WriteBlobDataString(String fileName, String data);
-	void WriteBlobDataByte(String fileName, PackedByteArray data);
-	void GetBlobInfo(String containerName, Callable callback);
-	void GetBlobInfo(String containerName, String path, Callable callback);
-
+	static Ref<GDKGameSaveProvider> initialize_game_save_provider(bool syncOnDemand, Ref<GDKUser> user);
+	static Ref<GDKAsyncBlock> initialize_game_save_provider_async(bool syncOnDemand, Ref<GDKUser> user);
 };
+}

@@ -183,7 +183,7 @@ void GDKPackage::_bind_methods() {
     ClassDB::bind_static_method(get_class_static(), D_METHOD("mount_with_ui_async", "package_identifier"), &GDKPackage::mount_with_ui_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_user_locale"), &GDKPackage::get_user_locale);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("get_write_stats"), &GDKPackage::get_write_stats);
-    ClassDB::bind_static_method(get_class_static(), D_METHOD("install_chunks", "package_identifier", "selectors", "minimum_update_interval_ms", "suppres_user_confirmation"), &GDKPackage::install_chunks);
+    ClassDB::bind_static_method(get_class_static(), D_METHOD("install_chunks", "package_identifier", "selectors", "minimum_update_interval_ms", "suppress_user_confirmation"), &GDKPackage::install_chunks);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("install_chunks_async", "package_identifier", "selectors", "minimum_update_interval_ms", "suppress_user_confirmation"), &GDKPackage::install_chunks_async);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("is_packaged_process"), &GDKPackage::is_packaged_process);
     ClassDB::bind_static_method(get_class_static(), D_METHOD("uninstall_package", "package_identifier"), &GDKPackage::uninstall_package);
@@ -485,6 +485,12 @@ void GDKXPackageFeature::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_tags"), &GDKXPackageFeature::get_tags);
     ClassDB::bind_method(D_METHOD("is_hidden"), &GDKXPackageFeature::is_hidden);
     ClassDB::bind_method(D_METHOD("get_store_ids"), &GDKXPackageFeature::get_store_ids);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "id"), "", "get_id");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "display_name"), "", "get_display_name");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "tags"), "", "get_tags");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hidden"), "", "is_hidden");
+    ADD_PROPERTY(PropertyInfo(Variant::PACKED_STRING_ARRAY, "store_ids"), "", "get_store_ids");
 }
 
 Ref<GDKXPackageFeature> GDKXPackageFeature::create(const XPackageFeature *feature) {
@@ -518,6 +524,19 @@ void GDKXPackageDetails::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_count"), &GDKXPackageDetails::get_count);
     ClassDB::bind_method(D_METHOD("is_age_restricted"), &GDKXPackageDetails::is_age_restricted);
     ClassDB::bind_method(D_METHOD("get_title_id"), &GDKXPackageDetails::get_title_id);
+
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "package_identifier"), "", "get_package_identifier");
+    ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "version", PROPERTY_HINT_NONE, "GDKXVersion"), "", "get_version");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "kind", PROPERTY_HINT_ENUM, "Game,Content", PROPERTY_USAGE_DEFAULT, "GDKXPackageKind::Enum"), "", "get_kind");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "display_name"), "", "get_display_name");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "description"), "", "get_description");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "publisher"), "", "get_publisher");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "store_id"), "", "get_store_id");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "installing"), "", "is_installing");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "index"), "", "get_index");
+    ADD_PROPERTY(PropertyInfo(Variant::INT, "count"), "", "get_count");
+    ADD_PROPERTY(PropertyInfo(Variant::BOOL, "age_restricted"), "", "is_age_restricted");
+    ADD_PROPERTY(PropertyInfo(Variant::STRING, "title_id"), "", "get_title_id");
 }
 
 Ref<GDKXPackageDetails> GDKXPackageDetails::create(const XPackageDetails *details) {

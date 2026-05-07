@@ -18,6 +18,7 @@
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
+#include "gdk_package.h"
 #include "gdk_store.h"
 #include "gdk_gameui.h"
 #include "gdk_profile.h"
@@ -39,6 +40,7 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+	GDREGISTER_CLASS(GDKPackage);
 	GDREGISTER_CLASS(GDKStore);
 	
 	GDREGISTER_CLASS(GDKGameUI);

@@ -45,6 +45,7 @@ namespace godot {
 		XTaskQueueRegistrationToken _user_change_token = {};
 		XTaskQueueRegistrationToken _device_association_change_token = {};
 		XTaskQueueRegistrationToken _default_audio_endpoint_change_token = {};
+		XTaskQueueRegistrationToken _package_installed_token = {};
 
 		bool _invite_registered = false;
 

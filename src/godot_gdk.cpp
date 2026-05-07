@@ -12,6 +12,9 @@
 #include <XUser.h>
 #include <XGame.h>
 #include <XGameInvite.h>
+#include <XPackage.h>
+#include "gdk_package.h"
+#include "gdk_system.h"
 
 #include <iomanip>
 #include <sstream>
@@ -56,6 +59,8 @@ void GodotGDK::_bind_methods() {
 				PropertyInfo(Variant::OBJECT, "user", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT, "GDKUser"),
 				PropertyInfo(Variant::INT, "endpoint_kind", PROPERTY_HINT_ENUM, "CommunicationRender,CommunicationCapture", PROPERTY_USAGE_DEFAULT, "GDKXUserDefaultAudioEndpointKind::Enum"),
 				PropertyInfo(Variant::STRING, "endpoint_id")));
+	ADD_SIGNAL(MethodInfo("package_installed",
+				PropertyInfo(Variant::DICTIONARY, "package_details")));
 }
 
 void GodotGDK::_notification(int p_what) {
@@ -69,6 +74,7 @@ void GodotGDK::_notification(int p_what) {
 			XUserUnregisterForChangeEvent(_user_change_token, false);
 			XUserUnregisterForDeviceAssociationChanged(_device_association_change_token, false);
 			XUserUnregisterForDefaultAudioEndpointUtf16Changed(_default_audio_endpoint_change_token, false);
+			XPackageUnregisterPackageInstalled(_package_installed_token, false);
 			XTaskQueueCloseHandle(queue);
 			XGameRuntimeUninitialize();
 		}
@@ -136,6 +142,26 @@ void DefaultAudioEndpointUtf16ChangeCallback(void* context, XUserLocalId userLoc
 	self->call_deferred("emit_signal", "default_audio_endpoint_utf16_changed", GDKUser::create(userHandle), endpoint_enum, endpoint_id);
 }
 
+void PackageInstalledCallback(void* context, const XPackageDetails* details) {
+	Dictionary package_details;
+	package_details["package_identifier"] = String(details->packageIdentifier);
+	package_details["version"] = GDKXVersion::create(&details->version);
+	package_details["kind"] = (GDKXPackageKind::Enum)details->kind;
+	package_details["display_name"] = String(details->displayName);
+	package_details["description"] = String(details->description);
+	package_details["publisher"] = String(details->publisher);
+	package_details["store_id"] = String(details->storeId);
+	package_details["installing"] = details->installing;
+	package_details["index"] = details->index;
+	package_details["count"] = details->count;
+	package_details["age_restricted"] = details->ageRestricted;
+	package_details["title_id"] = String(details->titleId);
+	
+	
+	GodotGDK* self = static_cast<GodotGDK*>(context);
+	self->call_deferred("emit_signal", "package_installed", details);
+}
+
 int GodotGDK::InitializeGDK(Callable cb, String scid) {
 
 	HRESULT hr = XGameRuntimeInitialize();
@@ -170,6 +196,9 @@ int GodotGDK::InitializeGDK(Callable cb, String scid) {
 
 	hr = XUserRegisterForDefaultAudioEndpointUtf16Changed(queue, this, &DefaultAudioEndpointUtf16ChangeCallback, &_default_audio_endpoint_change_token);
 	CheckResult(hr, "Default audio endpoint change event registered", "Failed to register default audio endpoint change event");
+
+	hr = XPackageRegisterPackageInstalled(queue, this, &PackageInstalledCallback, &_package_installed_token);
+	CheckResult(hr, "Package installed event registered", "Failed to register package installed event");
 
 	hr = Identity_TrySignInDefaultUserSilently(queue, cb);
 	CheckResult(hr, "Login successfully started", "Failed to start login");

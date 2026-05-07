@@ -18,6 +18,8 @@
 #include "gdk_game_save_blob.h"
 #include "gdk_user.h"
 #include "gdk_error.h"
+#include "gdk_package.h"
+#include "gdk_store.h"
 #include "gdk_gameui.h"
 #include "gdk_profile.h"
 #include "gdk_stringverify.h"

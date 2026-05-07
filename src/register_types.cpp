@@ -43,6 +43,8 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	}
 
 	GDREGISTER_CLASS(GDKEvents);
+	GDREGISTER_CLASS(GDKStore);
+	GDREGISTER_CLASS(GDKPackage);
 	GDREGISTER_CLASS(GDKGameUI);
 	GDREGISTER_CLASS(GDKProfile);
 	GDREGISTER_CLASS(GDKXblStringVerifyResult);

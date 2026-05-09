@@ -155,4 +155,15 @@ namespace godot
 		GDREGISTER_CLASS(GDKXblAchievementReward);
 		GDREGISTER_CLASS(GDKXblAchievementProgressChangeEntry);
 	}
-}
+
+	Ref<GDKXblAchievementProgressChangeEntry> GDKXblAchievementProgressChangeEntry::create(const XblAchievementProgressChangeEntry *change_entry) {
+		Ref<GDKXblAchievementProgressChangeEntry> wrapper;
+		if (change_entry != nullptr) {
+			wrapper.instantiate();
+			wrapper->achievement_id = change_entry->achievementId;
+			wrapper->progress_state = static_cast<GDKXblAchievementProgressState::Enum>(change_entry->progressState);
+			wrapper->progression = Ref<GDKXblAchievementProgression>(memnew(GDKXblAchievementProgression(change_entry->progression)));
+		}
+		return wrapper;
+	}
+	}

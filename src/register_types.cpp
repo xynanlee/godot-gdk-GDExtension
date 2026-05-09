@@ -23,6 +23,7 @@
 #include "gdk_gameui.h"
 #include "gdk_profile.h"
 #include "gdk_stringverify.h"
+#include "gdk_achievements_manager.h"
 
 using namespace godot;
 
@@ -40,6 +41,8 @@ void initialize_gdextension_types(ModuleInitializationLevel p_level)
 	if (p_level != MODULE_INITIALIZATION_LEVEL_SCENE) {
 		return;
 	}
+
+	GDREGISTER_RUNTIME_CLASS(GDKAchievementsManager);
 	GDREGISTER_CLASS(GDKPackage);
 	GDREGISTER_CLASS(GDKStore);
 	

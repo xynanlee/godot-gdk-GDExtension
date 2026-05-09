@@ -321,6 +321,8 @@ class GDKXblAchievementProgressChangeEntry  : public RefCounted {
 			progression = Ref<GDKXblAchievementProgression>(memnew(GDKXblAchievementProgression(change_entry.progression)));
 		}
 
+		static Ref<GDKXblAchievementProgressChangeEntry> create(const XblAchievementProgressChangeEntry* change_entry);
+
 		String achievement_id;
 		GDKXblAchievementProgressState::Enum progress_state;
 		Ref<GDKXblAchievementProgression> progression;

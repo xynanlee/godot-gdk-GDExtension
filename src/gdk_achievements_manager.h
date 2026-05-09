@@ -86,7 +86,7 @@ public:
                                             GDKXblAchievementProgressState::Enum state);
     int is_user_initialized() const;
     int remove_local_user();
-    int update_achievements(const String& achievements_id, int64_t current_progress);
+    int update_achievement(const String& achievement_id, int64_t current_progress);
 };
 }
 

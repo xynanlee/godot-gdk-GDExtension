@@ -85,7 +85,7 @@ void GDKAchievementsManager::_bind_methods() {
     ClassDB::bind_method(D_METHOD("get_achievements_by_state", "sort_field", "sort_order", "state"), &GDKAchievementsManager::get_achievements_by_state);
     ClassDB::bind_method(D_METHOD("is_user_initialized"), &GDKAchievementsManager::is_user_initialized);
     ClassDB::bind_method(D_METHOD("remove_local_user"), &GDKAchievementsManager::remove_local_user);
-    ClassDB::bind_method(D_METHOD("update_achievements", "achievement_id", "current_progress"), &GDKAchievementsManager::update_achievements);
+    ClassDB::bind_method(D_METHOD("update_achievement", "achievement_id", "current_progress"), &GDKAchievementsManager::update_achievement);
     
 	GDREGISTER_CLASS(GDKXblAchievementsManagerSortOrder);
 	GDREGISTER_CLASS(GDKXblAchievementsManagerResult);
@@ -132,6 +132,9 @@ void GDKAchievementsManager::_process(double delta) {
 
 int GDKAchievementsManager::add_local_user(Ref<GDKUser> user) {
     HRESULT hr = XblAchievementsManagerAddLocalUser(user->get_user(), _queue);
+    if (SUCCEEDED(hr)) {
+        _user = user;
+    }
     return (int64_t)hr;
 }
 
@@ -209,7 +212,7 @@ int GDKAchievementsManager::remove_local_user() {
     return (int64_t)hr;
 }
 
-int GDKAchievementsManager::update_achievements(const String &achievements_id, int64_t current_progress) {
+int GDKAchievementsManager::update_achievement(const String &achievement_id, int64_t current_progress) {
     if (_user.is_null()) {
         ERR_PRINT(vformat("GDKAchievementsManager::update_achievements Error: user is null"));
         return (int64_t)E_FAIL;
@@ -220,7 +223,7 @@ int GDKAchievementsManager::update_achievements(const String &achievements_id, i
         return (int64_t)E_INVALIDARG;
     }
 
-    HRESULT hr = XblAchievementsManagerUpdateAchievement(_user->get_id(), achievements_id.utf8().get_data(), current_progress);
+    HRESULT hr = XblAchievementsManagerUpdateAchievement(_user->get_id(), achievement_id.utf8().get_data(), current_progress);
     ERR_FAIL_COND_V_MSG(FAILED(hr), (int64_t)hr, vformat("XblAchievementsManagerUpdateAchievement Error: 0x%08ux", (uint64_t)hr));
     return (int64_t)hr;
 }
